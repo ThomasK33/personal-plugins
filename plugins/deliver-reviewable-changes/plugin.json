@@ -1,0 +1,19 @@
+{
+  "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
+  "name": "deliver-reviewable-changes",
+  "version": "0.1.0",
+  "description": "Scope substantial code changes before planning or implementation, then deliver small PRs with relevant evidence and clear human review decisions.",
+  "author": {
+    "name": "Thomas Kosiewski",
+    "url": "https://github.com/thomask33"
+  },
+  "homepage": "https://github.com/thomask33/personal-plugins",
+  "repository": "https://github.com/thomask33/personal-plugins",
+  "keywords": [
+    "code-review",
+    "pull-requests",
+    "planning",
+    "agent-skills",
+    "human-approval"
+  ]
+}
