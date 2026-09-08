@@ -6,9 +6,11 @@ An [Agent Plugins 1.0.0](https://agent-plugins.org/specification) package for co
 
 | Skill | When to use it |
 | --- | --- |
-| [deliver-reviewable-changes](skills/deliver-reviewable-changes/SKILL.md) | Before planning or implementing substantial changes, to choose independently shippable increments and prepare focused review. |
+| [deliver-reviewable-changes](skills/deliver-reviewable-changes/SKILL.md) | When planning or implementing code changes, including executing an existing plan, to choose reviewable increments before coding. |
 
 The skill carries one workflow from scoping through implementation, verification, review, and merge. It keeps necessary tests and correctness protections within each increment, freezes implementation scope when review begins, and groups PRs by phase for a coordinated merge once their gates pass. Later phases do not hold up a finished phase just because they share a stack.
+
+Use it while creating a plan and when starting implementation of that plan, even if the request only says "implement the plan." The executing agent checks delivery boundaries before editing; an approved milestone does not automatically become one PR. Small, cohesive changes keep a lightweight workflow.
 
 On first use in a repository, it reads existing rules, asks only about missing review gates and merge authority, and saves confirmed choices in repository-scoped agent memory. Later tasks reuse that policy. A repository can choose "Codex code review reports no issues, required checks pass, then the agent merges automatically" without an extra human-approval step. Repositories that require human approval retain it. Memory storage depends on the agent's available capabilities; the skill does not change repository controls.
 

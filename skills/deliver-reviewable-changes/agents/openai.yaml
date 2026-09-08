@@ -1,3 +1,3 @@
 interface:
   display_name: "Deliver Reviewable Changes"
-  short_description: "Plan smaller changes that are easier to review and ship"
+  short_description: "Plan and implement changes in reviewable increments"

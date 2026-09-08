@@ -1,11 +1,11 @@
 ---
 name: deliver-reviewable-changes
-description: Read before planning or executing substantial features, refactors, migrations, or other code changes spanning multiple components or behaviors, even when no PR is mentioned. Helps prevent oversized PRs and repeated review rework by defining independently shippable increments, validation, and review decisions early. Learns and remembers repository-specific review and merge gates. Also use when scope grows during implementation or review, or when preparing a PR or completing a stack.
+description: Use when planning or implementing code changes, including requests to implement a plan or continue existing work. Choose small, reviewable increments before coding so an entire plan does not become one oversized PR. Applies in both planning and execution, whether or not a PR is mentioned, and when preparing changes for review.
 ---
 
 # Deliver reviewable changes
 
-Read this skill before planning or making substantial code changes. Make reviewability a constraint on the implementation: choose a useful delivery boundary, keep the change understandable, and establish how its consequential behavior will be checked. Carry those decisions through implementation, verification, review, and the repository's merge workflow. The PR description records the resulting decision and evidence.
+Read this skill before planning or implementing code changes, including when starting execution of an existing plan. Make reviewability a constraint on the implementation: choose a useful delivery boundary, keep the change understandable, and establish how its consequential behavior will be checked. Keep the workflow proportional: a small, cohesive change may already be the right increment. Carry those decisions through implementation, verification, review, and the repository's merge workflow. The PR description records the resulting decision and evidence.
 
 This skill brings together a risk-based review framework, lessons from ClawSweeper, and engineering review prompts. Read [design rationale](references/design-rationale.md) when explaining or revising the policy; the skill works without access to the original documents.
 
@@ -18,6 +18,8 @@ Load the saved review and merge policy for this repository. If its gates or merg
 Enter at the task's current stage. For planning only, define the increments and validation approach without starting implementation. For implementation, establish the next increment before coding, monitor its boundary as work develops, and carry authorized work through verification, review, and merge when the task and saved policy authorize it. If implementation is already underway, assess the actual change and recover a useful boundary where needed. For a description-only task, describe the actual change and flag gaps without starting implementation. Carry forward existing authorization; do not ask again before an automatic merge already covered by the task and repository policy. This skill does not expand the task's permissions or authorize changing repository controls. When preparing a PR whose publication is not authorized or available, deliver the title and body locally and state what remains.
 
 ## Before coding: shape the next increment
+
+When implementing an existing or approved plan, reuse its agreed intent and delivery boundaries. If it only describes a milestone, choose the next reviewable increment and map the remaining work to later increments before editing. Approval of the plan does not imply that all its steps belong in one PR. Do this as part of execution without restarting the planning approval process for routine delivery choices.
 
 State the problem and intended before/after behavior. Find the existing implementation, relevant callers, and established abstractions before adding a new concept. Confirm that the solution addresses the requirement rather than merely matching a proposed implementation.
 
