@@ -1,9 +1,10 @@
 #!/usr/bin/env python3
-"""Check this repository's skills-only Agent Plugins packages."""
+"""Check the skills-only Agent Plugin at this repository's root."""
 
 import argparse
 import hashlib
 import json
+import os
 import re
 from pathlib import Path
 from urllib.parse import unquote, urlsplit
@@ -76,17 +77,22 @@ def check_skill(skill, plugin):
 
 def check_plugin(plugin, schema):
     require(plugin.is_dir(), f"Expected plugin directory: {plugin}")
+    manifest = plugin / "plugin.json"
+    require(manifest.is_file(), f"Missing portable manifest at repository root: {manifest}")
     # A deliberately stricter repository convention keeps archives straightforward.
     require(not plugin.is_symlink(), f"Plugin root cannot be a symlink: {plugin}")
-    for path in plugin.rglob("*"):
-        require(not path.is_symlink(), f"Package symlinks are not used in this repository: {path}")
-        inside(path, plugin)
-    manifest = plugin / "plugin.json"
-    require(manifest.is_file(), f"Missing portable manifest: {manifest}")
+    for directory, folders, files in os.walk(plugin):
+        # Local checkout and development files are not distributed in Git archives.
+        folders[:] = [name for name in folders if name not in {".git", ".venv", "__pycache__"}]
+        for name in folders + files:
+            if Path(directory) == plugin and name == ".git":
+                continue  # A worktree may have a .git file instead of a directory.
+            path = Path(directory) / name
+            require(not path.is_symlink(), f"Package symlinks are not used in this repository: {path}")
+            inside(path, plugin)
     data = json.loads(manifest.read_text(encoding="utf-8"))
     errors = sorted(Draft202012Validator(schema).iter_errors(data), key=lambda e: str(e.path))
     require(not errors, f"{manifest}: " + "; ".join(error.message for error in errors))
-    require(data["name"] == plugin.name, f"Plugin name must match directory: {manifest}")
     require(not (plugin / "mcp.json").exists(),
             f"Add MCP schema and semantic checks before introducing MCP packages: {plugin}")
     skills = plugin / "skills"
@@ -95,7 +101,7 @@ def check_plugin(plugin, schema):
     require(entries, f"No skills found: {plugin}")
     for skill in entries:
         check_skill(skill, plugin)
-    print(f"Validated {plugin.name}: manifest, {len(entries)} skill(s), containment, references")
+    print(f"Validated {data['name']}: root manifest, {len(entries)} skill(s), containment, references")
 
 
 def main():
@@ -112,10 +118,7 @@ def main():
     schema = json.loads(raw)
     Draft202012Validator.check_schema(schema)
     root = Path(__file__).resolve().parents[1]
-    plugins = sorted((root / "plugins").iterdir())
-    require(plugins, "No plugin packages found")
-    for plugin in plugins:
-        check_plugin(plugin, schema)
+    check_plugin(root, schema)
     check_links(root / "README.md", root)
 
 
