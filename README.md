@@ -8,7 +8,7 @@ An [Agent Plugins 1.0.0](https://agent-plugins.org/specification) package for co
 | --- | --- |
 | [deliver-reviewable-changes](skills/deliver-reviewable-changes/SKILL.md) | Before planning or implementing substantial changes, to choose independently shippable increments and prepare focused human review. |
 
-The skill carries one workflow from scoping through implementation, verification, and PR preparation. It keeps necessary tests and correctness protections within each increment, freezes implementation scope when review begins, and prepares complete bounded stacks to merge together once review and CI are ready. Codex review approval and human approval remain separate; the workflow requires human approval before merge.
+The skill carries one workflow from scoping through implementation, verification, and PR preparation. It keeps necessary tests and correctness protections within each increment, freezes implementation scope when review begins, and groups PRs by phase for a coordinated merge once review and CI are ready. Later phases do not hold up a finished phase just because they share a stack. Codex review approval and human approval remain separate; the workflow requires human approval before merge.
 
 ## Use the plugin
 

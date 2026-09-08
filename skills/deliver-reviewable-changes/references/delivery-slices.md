@@ -12,6 +12,8 @@ Before substantial implementation, sketch the likely delivery sequence in the ex
 - The adjacent concerns deferred to another PR and why their absence leaves this increment safe.
 - The evidence and approval needed to land it, and where implementation should stop adding scope.
 
+For phased work, identify which PRs complete the current phase and its last PR. That phase defines the coordinated merge group; the branch stack records dependencies. If there are no named phases, use a bounded deliverable as the group rather than assuming every branch in a stack must merge together.
+
 Keep the sketch proportionate. A routine fix does not need a separate planning document. If the task already has workers, use this boundary in their briefs and require a scope check before expanding it. This guidance does not itself authorize spawning workers.
 
 Ask whether the application remains usable if this PR and its accepted prerequisites ship while every later PR is delayed. If not, move the required protection earlier, include it here, or redesign the split. An inactive, tested protocol can sometimes land before its callers, but activation must include every caller and protection needed for correctness. A half-enabled protocol is not a safe increment.
@@ -32,7 +34,7 @@ This example illustrates boundaries, not a prescribed architecture. Choose bound
 
 ## Limit work waiting on other work
 
-Use sequential PRs when later work cannot proceed reliably until the prerequisite lands. Use a shallow stack when a validated prerequisite provides a stable base and dependent review is useful. A practical starting point is two or three unmerged layers. Define the finished change and its planned top before adding dependent work, bring each layer through review promptly, and hold ready layers for the complete stack's coordinated merge. Reconsider adding depth when changes at the bottom repeatedly invalidate work above it.
+Use sequential PRs when later work cannot proceed reliably until the prerequisite lands. Use a shallow stack when a validated prerequisite provides a stable base and dependent review is useful. A practical starting point is two or three unmerged layers. Define the current phase's merge group before adding dependent work, bring each layer through review promptly, and hold ready members for that phase's coordinated merge. A stack spanning later phases must not delay a finished phase solely because it has more branches. Reconsider adding depth when changes at the bottom repeatedly invalidate work above it.
 
 Independent concerns do not need to wait in the same stack. Avoid starting downstream implementation against unresolved interfaces; independent investigation can continue. Plan and branch by concern before writing the whole milestone into one branch.
 
@@ -44,17 +46,17 @@ Follow available repository tooling for stack mechanics. This skill does not req
 
 After implementation is complete and a PR enters review, its author focuses on review findings, CI failures, and necessary integration updates for that agreed change. A draft opened for visibility is still in implementation until the author declares it ready for review. New capabilities and discretionary cleanup belong on other branches, not in the review candidate.
 
-Other authorized agents may continue the remaining planned layers against a stable prerequisite. Once the planned top is reached, later work starts another delivery instead of extending the stack that is finishing review. Changing the planned boundary is an explicit scope decision, not an incidental branch addition.
+Other authorized agents may continue the remaining PRs in the phase against a stable prerequisite. Work on later phases belongs on separate branches and does not extend the current phase's merge group, even if those branches share its stack. Changing the phase boundary is an explicit scope decision, not an incidental branch addition.
 
 Keep valid correctness findings with the layer that owns them, even during the freeze. If a fix changes the prerequisite contract, notify dependent work, update affected layers, and refresh their evidence and approvals. Substantial redesign returns the affected PR to implementation; update its scope and re-enter review when complete. The freeze protects the review target and never excuses an unresolved defect.
 
-## Finish and merge the complete stack
+## Finish and merge the phase together
 
-Default to one coordinated merge of the finished, bounded stack. Preparing a lower PR for merge does not mean merging it while the remaining planned layers are still being implemented. The stack remains a set of small review decisions, with every intermediate state safe if integration pauses.
+When a stack represents an entire phase, aim to merge that phase's changes in one coordinated operation after every PR is ready. Preparing one member for merge does not mean merging it while the remaining PRs in that phase are still being implemented. If the stack also contains later phases, stop at the current phase's last PR. Preserve dependency order and ensure all prerequisites are already landed or included in the approved merge group. Every intermediate state must remain safe if integration pauses.
 
 Use the existing stack or PR record to make readiness visible. For each layer, identify its current head, immediate base, implementation status, blocking findings, reviewer approval, human approval, and CI result. When Codex review is the agreed automated gate, require its current approval; unavailable review is a visible gap. Agent review does not satisfy this workflow's separate human-approval requirement.
 
-Before beginning the merge, confirm all layers in the planned set are ready and that the combined result at the top has the relevant integration evidence. A green top PR does not establish the review or CI status of lower layers. Freeze that set for the merge attempt and use the repository's whole-stack merge or queue support with the intended top as the boundary.
+Before beginning the merge, confirm all PRs in the phase's group are ready and that the combined result through its last PR has the relevant integration evidence. A green last PR does not establish the review or CI status of earlier members. Freeze that set for the merge attempt and scope the repository's stack merge or queue operation to it. An unready later phase is not a blocker for this group unless it exposes a missing correctness prerequisite.
 
 Follow the tool's documented ordering and atomicity. Some tools can merge a set atomically; a queue or sequential workflow may land it in parts. If a later candidate changes, loses valid approval, or fails a gate, pause further merges and refresh readiness. Report any layers already landed; do not force the remainder to preserve the appearance of a single operation. This is why each increment still needs a safe intermediate state.
 
