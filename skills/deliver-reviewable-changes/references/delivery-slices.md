@@ -1,6 +1,6 @@
 # Deliver a milestone through small PRs
 
-Read this when the work spans several concerns, a branch is growing difficult to review, or review fixes keep widening its scope. A broad task can have one purpose and still need several independent review decisions.
+Read this when the work spans several concerns, a branch is growing difficult to review, review fixes keep widening its scope, or a stack is approaching review and merge. A broad task can have one purpose and still need several independent review decisions.
 
 ## Choose the next safe increment
 
@@ -32,13 +32,31 @@ This example illustrates boundaries, not a prescribed architecture. Choose bound
 
 ## Limit work waiting on other work
 
-Use sequential PRs when later work cannot proceed reliably until the prerequisite lands. Use a shallow stack when a validated prerequisite provides a stable base and dependent review is useful. A practical starting point is two or three unmerged layers, with the bottom advancing through its required gates promptly. Reconsider adding depth when changes at the bottom repeatedly invalidate work above it.
+Use sequential PRs when later work cannot proceed reliably until the prerequisite lands. Use a shallow stack when a validated prerequisite provides a stable base and dependent review is useful. A practical starting point is two or three unmerged layers. Define the finished change and its planned top before adding dependent work, bring each layer through review promptly, and hold ready layers for the complete stack's coordinated merge. Reconsider adding depth when changes at the bottom repeatedly invalidate work above it.
 
 Independent concerns do not need to wait in the same stack. Avoid starting downstream implementation against unresolved interfaces; independent investigation can continue. Plan and branch by concern before writing the whole milestone into one branch.
 
 For each layer, inspect the diff against its immediate parent. Check its expected integrated state as well: a small layer diff does not prove that the cumulative result is safe. Put review fixes in the owning layer, propagate the update, and refresh affected evidence and human approvals. After a lower PR merges, reconcile the remaining branches with the actual merged result using the repository's workflow. Do not assume a rebase or a nominal base label produced the intended diff.
 
 Follow available repository tooling for stack mechanics. This skill does not require a particular CLI, install extensions, or grant permission to push, merge, or rewrite shared history.
+
+## Freeze implementation scope when review starts
+
+After implementation is complete and a PR enters review, its author focuses on review findings, CI failures, and necessary integration updates for that agreed change. A draft opened for visibility is still in implementation until the author declares it ready for review. New capabilities and discretionary cleanup belong on other branches, not in the review candidate.
+
+Other authorized agents may continue the remaining planned layers against a stable prerequisite. Once the planned top is reached, later work starts another delivery instead of extending the stack that is finishing review. Changing the planned boundary is an explicit scope decision, not an incidental branch addition.
+
+Keep valid correctness findings with the layer that owns them, even during the freeze. If a fix changes the prerequisite contract, notify dependent work, update affected layers, and refresh their evidence and approvals. Substantial redesign returns the affected PR to implementation; update its scope and re-enter review when complete. The freeze protects the review target and never excuses an unresolved defect.
+
+## Finish and merge the complete stack
+
+Default to one coordinated merge of the finished, bounded stack. Preparing a lower PR for merge does not mean merging it while the remaining planned layers are still being implemented. The stack remains a set of small review decisions, with every intermediate state safe if integration pauses.
+
+Use the existing stack or PR record to make readiness visible. For each layer, identify its current head, immediate base, implementation status, blocking findings, reviewer approval, human approval, and CI result. When Codex review is the agreed automated gate, require its current approval; unavailable review is a visible gap. Agent review does not satisfy this workflow's separate human-approval requirement.
+
+Before beginning the merge, confirm all layers in the planned set are ready and that the combined result at the top has the relevant integration evidence. A green top PR does not establish the review or CI status of lower layers. Freeze that set for the merge attempt and use the repository's whole-stack merge or queue support with the intended top as the boundary.
+
+Follow the tool's documented ordering and atomicity. Some tools can merge a set atomically; a queue or sequential workflow may land it in parts. If a later candidate changes, loses valid approval, or fails a gate, pause further merges and refresh readiness. Report any layers already landed; do not force the remainder to preserve the appearance of a single operation. This is why each increment still needs a safe intermediate state.
 
 ## Notice when the boundary is failing
 

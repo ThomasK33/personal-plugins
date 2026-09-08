@@ -53,6 +53,12 @@ Explain the increment's boundary and prerequisite without making the reviewer re
 
 For a dependent layer, identify its actual parent PR and what contract it consumes. Include its own required tests. Do not claim the whole milestone is delivered, or that the layer is safe, solely because the parent passed review.
 
+For a stack being merged together, also identify the planned top and whether this PR is still in implementation, in review, or ready and waiting for the stack. For example:
+
+> Implementation is complete; this branch now takes review fixes and necessary CI or integration repairs. This is the middle layer of the three-PR change linked above. Codex review and CI passed on the linked candidate; human approval is pending. Merge with the complete stack after all three layers are ready. Additional features will be a separate delivery.
+
+Use real links, revisions, and observed statuses. Keep detailed readiness in the existing review system and refresh the brief when the candidate changes.
+
 ## Revision after review
 
 Keep the current body accurate and preserve the earlier discussion in the review system. When an update is authorized, a concise delta can read:
