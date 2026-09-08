@@ -20,7 +20,7 @@ For a bug fix, a reproducer with an expected outcome is useful evidence. A servi
 
 When shared state or asynchronous work changes, identify the invariant and which lock or other mechanism protects it. Trace who starts, cancels, and waits for goroutines, threads, or tasks. Examine interleavings, shutdown, retries, partial failure, and resource cleanup where relevant.
 
-Targeted tests, a race detector, or an execution trace can support this reasoning. A successful stress run does not by itself establish that every interleaving is safe. Point the human reviewer to the unresolved invariant or lifecycle question.
+Targeted tests, a race detector, or an execution trace can support this reasoning. A successful stress run does not by itself establish that every interleaving is safe. Point the reviewer to the unresolved invariant or lifecycle question.
 
 ## Authority and data boundaries
 

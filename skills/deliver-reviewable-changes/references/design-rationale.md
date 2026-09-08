@@ -9,11 +9,12 @@ This skill combines a risk-based approach to code review with practical lessons 
 - **Reviewability starts before implementation.** Choose delivery boundaries and evidence early, then carry them through implementation and the PR handoff. An existing change is also a useful entry point.
 - **A milestone can need several PRs.** Choose independently safe increments, keep required tests and protections with each increment, and limit dependent work awaiting review. Repeated substantive corrections trigger a scope reassessment.
 - **Review needs a stable target.** Once a PR enters review, keep its branch focused on findings and necessary CI or integration repairs. New capabilities continue separately.
-- **Merge by phase.** When a stack represents a phase, review its PRs independently and merge the phase's changes together once every member and the combined result are ready. A stack can span multiple phases; later work must not expand or delay a finished phase's merge group. Keep Codex review, CI, and human approval distinct.
+- **Merge by phase.** When a stack represents a phase, review its PRs independently and merge the phase's changes together once every member and the combined result are ready. A stack can span multiple phases; later work must not expand or delay a finished phase's merge group. Apply the repository's review and merge gates to every member.
 - **The author reduces reconstruction work.** Cohesive changes, explanations of invariants, a reading order, and concise evidence help a reviewer understand the consequential questions.
 - **Checklists guide inquiry.** Apply engineering questions according to context, explain consequential omissions, and preserve unresolved questions. A completed checklist is not approval.
-- **Approval remains human.** This workflow keeps human approval as a policy choice. Risk changes the depth and focus of review; it does not let the authoring agent approve its own work.
-- **Automation needs a boundary.** Repair authorization can precede code a human has never seen. Revisions therefore need refreshed evidence and renewed approval of the final candidate. The skill prepares that handoff; repository and release controls enforce it.
+- **Learn the repository's policy once.** Read existing rules, ask about missing gates and merge authority, and remember confirmed choices per repository. Reuse them until the user or repository rules change. Do not transfer one company's controls to unrelated repositories.
+- **Human approval is conditional.** A repository can authorize automatic agent merging after Codex code review reports no issues and required checks pass. Another can require a person to approve each change. The skill follows that choice without adding its own human-approval step.
+- **Automation needs current evidence.** A past review does not establish a revised candidate's result. Refresh affected gates after changes and preserve enforced controls. A saved merge policy records the conditions for action, not an approval of every future revision.
 
 ## Delivery lessons
 

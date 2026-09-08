@@ -19,7 +19,7 @@ Use actual paths, symbols, commits, and results from the task. Do not fabricate 
 
 > Changes the button text from "Continue" to "Start export" so the action is clear before submission. The diff contains only the label change.
 >
-> Validation: inspected the rendered dialog at desktop and narrow widths; the label fits. No automated tests added for this copy change. Human review and approval are pending.
+> Validation: inspected the rendered dialog at desktop and narrow widths; the label fits. No automated tests added for this copy change. The configured review gate is pending.
 
 Use such a body only if those observations were made and repository checks are satisfied. If the screen was not viewed, state that limitation instead. No standard requires this exact wording or a fixed number of sentences.
 
@@ -37,7 +37,7 @@ Use such a body only if those observations were made and repository checks are s
 >
 > **Evidence for the current draft:** Cross-tenant requests were denied in the integration environment; representative output matched the existing format. Capacity at the largest supported account size has not been measured, so this PR does not establish that bound. Attach the actual commands, revision, and accessible results here.
 >
-> **Recovery limit:** Disabling the route stops future downloads but cannot retract data already downloaded. Human approval is pending the policy decision, resulting changes, and relevant validation.
+> **Recovery limit:** Disabling the route stops future downloads but cannot retract data already downloaded. The policy decision, resulting changes, and relevant validation remain outstanding.
 
 The important feature is that the unresolved decision appears before implementation details. The example's provisional policy is not permission for an agent to choose product behavior in a real task.
 
@@ -49,13 +49,13 @@ Explain the increment's boundary and prerequisite without making the reviewer re
 >
 > Review the lease acquisition and release around `startEagerCompaction`, then the held-work reset/shutdown tests. This PR preserves turn admission and continuation scheduling. Coordinator extraction and durable persistence changes are separate increments.
 >
-> Base: the current main branch. The fix uses the existing lease contract and can ship without the later extraction. Validation and human approval must cover this candidate.
+> Base: the current main branch. The fix uses the existing lease contract and can ship without the later extraction. Validation and the configured review gates must cover this candidate.
 
 For a dependent layer, identify its actual parent PR and what contract it consumes. Include its own required tests. Do not claim the whole milestone is delivered, or that the layer is safe, solely because the parent passed review.
 
 For phased work, identify the phase, its PRs and last PR, and whether this PR is still in implementation, in review, or ready and waiting for that phase. For example:
 
-> Implementation is complete; this branch now takes review fixes and necessary CI or integration repairs. This is the middle layer of the three-PR phase linked above. Codex review and CI passed on the linked candidate; human approval is pending. Merge all three PRs in this phase together once ready. Later phases are outside this merge group, even if their branches extend the stack.
+> Implementation is complete; this branch now takes review fixes and necessary CI or integration repairs. This is the middle layer of the three-PR phase linked above. Codex code review completed with no issues and the required CI checks passed on the linked candidate. Repository policy authorizes the agent to merge once these gates pass. Merge all three PRs in this phase together once ready. Later phases are outside this merge group, even if their branches extend the stack.
 
 Use real links, revisions, and observed statuses. Keep detailed readiness in the existing review system and refresh the brief when the candidate changes.
 
@@ -63,7 +63,7 @@ Use real links, revisions, and observed statuses. Keep detailed readiness in the
 
 Keep the current body accurate and preserve the earlier discussion in the review system. When an update is authorized, a concise delta can read:
 
-> Since the reviewed candidate, cancellation now waits for the export worker to release its lease. Please re-review `ExportJob.cancel` and the shutdown test. The earlier shutdown result is stale; the focused test passed on the new candidate, while full integration validation is still pending. The new commit needs renewed human approval.
+> Since the reviewed candidate, cancellation now waits for the export worker to release its lease. Please re-review `ExportJob.cancel` and the shutdown test. The earlier shutdown result is stale; the focused test passed on the new candidate, while full integration validation is still pending. The configured review gate must be refreshed for this candidate.
 
 Replace this with the actual delta and observed state. Permission to address feedback does not authorize erasing a reviewer's concern, declaring their approval current, or posting an otherwise unauthorized message.
 
