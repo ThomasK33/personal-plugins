@@ -1,7 +1,7 @@
 {
   "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
   "name": "deliver-reviewable-changes",
-  "version": "0.1.5",
+  "version": "0.1.6",
   "description": "Plan and implement code changes in small, reviewable increments, including when executing an existing plan.",
   "author": {
     "name": "Thomas Kosiewski",

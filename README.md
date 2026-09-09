@@ -8,7 +8,9 @@ An [Agent Plugins 1.0.0](https://agent-plugins.org/specification) package for co
 | --- | --- |
 | [deliver-reviewable-changes](skills/deliver-reviewable-changes/SKILL.md) | When planning or implementing code changes, including executing an existing plan, to choose reviewable increments before coding. |
 
-The skill carries one workflow from scoping through implementation, verification, review, and merge. It keeps necessary tests and correctness protections within each increment, freezes implementation scope when review begins, and groups PRs by phase for a coordinated merge once their gates pass. Later phases do not hold up a finished phase just because they share a stack.
+The short core skill defines five delivery rules: split before coding, freeze each established layer's scope, stabilize PRs from the bottom up, parallelize against stable prerequisites, and merge a ready phase through its configured gates. The scope freeze starts when a delivery increment is committed or its stacked PR is created, including drafts. Review fixes, CI fixes, and necessary integration updates stay with the owning layer; new scope belongs elsewhere.
+
+Detailed delivery guidance, review prompts, PR-writing examples, and repository onboarding live in references loaded only when needed. The core remains usable on its own and can use an installed stack-tool skill for mechanics. Later phases do not hold up a finished phase just because they share a stack.
 
 Use it while creating a plan and when starting implementation of that plan, even if the request only says "implement the plan." The executing agent checks delivery boundaries before editing; an approved milestone does not automatically become one PR. Small, cohesive changes keep a lightweight workflow.
 

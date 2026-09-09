@@ -4,6 +4,16 @@ Use these prompts to find the evidence and decisions relevant to this candidate.
 
 For a consequential question, retain a short account of the claim, supporting evidence, uncertainty, and next action. If a material question cannot be assessed, say so. Explain a non-obvious decision that a category is inapplicable. Do not create a repository tracking file just to store this working analysis.
 
+## Choose evidence for the changed behavior
+
+Choose evidence before implementing consequential behavior and gather it as the change develops. Derive expected outcomes from the requirement or an independently established invariant; tests that repeat implementation assumptions or assert only that a field exists do not establish the desired behavior.
+
+Match the evidence to the claim. A screenshot can show layout, and a trace can show an exchange; neither proves an unrelated authorization or concurrency property. Exercise a real integration when that boundary is material and accessible. If it is unavailable, describe the missing conclusion rather than presenting mocks as equivalent proof.
+
+Record actual results, the tested candidate, and material environment limits. Distinguish passed, failed, not run, unavailable, and stale evidence. A check's existence, a short diff, generated output, or agreement between agents is not proof of correctness. Do not invent measurements, CI results, artifacts, or reviewer verdicts.
+
+Run required checks and those justified by the change. Once they pass, broaden testing only for new changes, failures, or unresolved concerns; a trivial reversible edit does not need extra tests solely to fill a template. Link accessible results or provide concise commands and outcomes, excluding credentials and private customer data.
+
 ## Before committing to a design
 
 For new concepts, interfaces, or product rules, establish the problem and acceptance criteria. Does the proposed design solve that problem using the system's existing concepts where practical? Are the interfaces sufficient and understandable to their callers? Will a user understand the behavior and available actions? What performance or scale assumptions does the design make, and how could they be checked?
@@ -45,3 +55,5 @@ For migrations, configuration, dependencies, and deployment changes, examine com
 Examine names, explanations, encapsulation, clarity, extension points, complexity, size, and failure handling. Identify an existing capability before introducing an alternative. Distinguish source changes from generated output while checking both for consequences.
 
 Read the final PR as someone who did not participate in implementation. Make the needed decision and evidence easy to locate. Remove duplicate or obsolete feedback, distinguish requirements from suggestions, and explain whether follow-up review is needed. Specific recognition of a useful pattern supports shared understanding; generic praise adds noise.
+
+Before publication, inspect the final change with its surrounding code and mainline behavior. Fix concrete problems within the layer's scope and identify decisions that remain unresolved. Preserve significant dissent and existing review history; a pushed fix does not itself establish that a reviewer's concern is resolved. Refresh conclusions after repairs or rebases change the candidate.

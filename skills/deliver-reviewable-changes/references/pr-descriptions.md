@@ -11,6 +11,14 @@ A risk label cannot replace a review question. Instead of "high-risk concurrency
 
 Use actual paths, symbols, commits, and results from the task. Do not fabricate links or fill examples with assumed success. The examples below are fictional and illustrate structure only; none of their facts or test outcomes are evidence for a real PR.
 
+## Keep the handoff focused
+
+Lead the title and opening with the concrete problem and resulting behavior. Place consequential review questions near the top: tell the reviewer where to look, what to judge, and why it matters. Give a reading order only when it helps navigate the change.
+
+Write about the final implementation, removing abandoned approaches unless they explain a tradeoff. State this layer's purpose, actual prerequisite, deferred work, and why its intermediate state can ship safely. Keep the full roadmap out of each PR body. Include material limits to validation, compatibility, rollout, and recovery; reverting code may not repair data or retract external effects.
+
+Scale the detail to the change. Two sentences plus validation can be enough for routine work. Omit empty sections, unsupported risk scores, invented reviewer assignments, and human-approval placeholders where the policy does not require them. Refresh the body after review fixes change its claims. Do not commit separate review reports or process artifacts unless the task or repository calls for them.
+
 ## Routine change
 
 **Title:** Clarify when the export starts

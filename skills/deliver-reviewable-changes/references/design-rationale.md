@@ -2,13 +2,16 @@
 
 This skill combines a risk-based approach to code review with practical lessons from human and agent collaboration. It is self-contained: its instructions, review prompts, and examples do not require access to the author's working documents or conversation history.
 
+The entry point keeps the delivery decisions together: split before coding, freeze established layers, stabilize from the bottom up, parallelize against stable prerequisites, and merge a ready phase through its configured gates. Detailed prompts, evidence guidance, examples, and onboarding are loaded only for the task that needs them. An available stack-tool skill supplies mechanics; it is not a required dependency.
+
 ## Decisions carried into the skill
 
 - **Review concerns risk and ownership.** Direct attention to consequential uncertainty, including complexity and loss of shared understanding. Lines changed indicate reading effort but do not measure the consequences of a change.
 - **Claims need relevant evidence.** Evidence must address the changed behavior and the current candidate. A test can agree with an implementation because both inherited the same mistaken assumption. Distinguish a failed assessment from a defect or insufficient proof.
 - **Reviewability starts before implementation.** Choose delivery boundaries and evidence early, then carry them through implementation and the PR handoff. An existing change is also a useful entry point.
 - **A milestone can need several PRs.** Choose independently safe increments, keep required tests and protections with each increment, and limit dependent work awaiting review. Repeated substantive corrections trigger a scope reassessment.
-- **Review needs a stable target.** Once a PR enters review, keep its branch focused on findings and necessary CI or integration repairs. New capabilities continue separately.
+- **Review needs a stable target.** Once a delivery increment is committed or its stacked PR is created, freeze its scope, including for drafts. Keep fixes with the owning layer and propagate them through the stack. Scope remains fixed even when commit hashes change.
+- **Stabilize from the bottom up.** Prioritize making the lowest unfinished layer ready before extending dependent work. Independent work and upper layers with stable prerequisites can proceed in parallel; unresolved foundations should not accumulate more dependents.
 - **Merge by phase.** When a stack represents a phase, review its PRs independently and merge the phase's changes together once every member and the combined result are ready. A stack can span multiple phases; later work must not expand or delay a finished phase's merge group. Apply the repository's review and merge gates to every member.
 - **The author reduces reconstruction work.** Cohesive changes, explanations of invariants, a reading order, and concise evidence help a reviewer understand the consequential questions.
 - **Checklists guide inquiry.** Apply engineering questions according to context, explain consequential omissions, and preserve unresolved questions. A completed checklist is not approval.

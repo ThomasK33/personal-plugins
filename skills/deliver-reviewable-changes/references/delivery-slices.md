@@ -1,6 +1,6 @@
 # Deliver a milestone through small PRs
 
-Read this when the work spans several concerns, a branch is growing difficult to review, review fixes keep widening its scope, or a stack is approaching review and merge. A broad task can have one purpose and still need several independent review decisions.
+Read this for a difficult split, a branch that is growing hard to review, repeated review rework, or a phase merge. The main skill contains the normal delivery loop; these details help when its boundaries need more judgment.
 
 ## Choose the next safe increment
 
@@ -34,21 +34,23 @@ This example illustrates boundaries, not a prescribed architecture. Choose bound
 
 ## Limit work waiting on other work
 
-Use sequential PRs when later work cannot proceed reliably until the prerequisite lands. Use a shallow stack when a validated prerequisite provides a stable base and dependent review is useful. A practical starting point is two or three unmerged layers. Define the current phase's merge group before adding dependent work, bring each layer through review promptly, and hold ready members for that phase's coordinated merge. A stack spanning later phases must not delay a finished phase solely because it has more branches. Reconsider adding depth when changes at the bottom repeatedly invalidate work above it.
+Stack dependent changes on their actual prerequisites and keep the active chain manageable. If work cannot proceed reliably until a prerequisite lands, use sequential PRs. Define the current phase's merge group before adding dependent work, bring each layer through review promptly, and hold ready members for that phase's coordinated merge. A stack spanning later phases must not delay a finished phase solely because it has more branches. Reconsider adding depth when changes at the bottom repeatedly invalidate work above it.
 
-Independent concerns do not need to wait in the same stack. Avoid starting downstream implementation against unresolved interfaces; independent investigation can continue. Plan and branch by concern before writing the whole milestone into one branch.
+Give the lowest unfinished layer priority for implementation fixes, review findings, and CI failures, then progress upward. Do not keep adding dependent work while a lower layer has a concrete unresolved blocker. Pending review or CI alone need not idle the agent: work with stable prerequisites or independent concerns can continue. Plan and branch by concern before writing the whole milestone into one branch.
+
+For authorized parallel work, assign each layer a clear owner and coordinate changes to shared prerequisite contracts. Use separate branches or workspaces, and serialize stack rewrites that affect another worker's branch. When a lower-layer fix invalidates an upper layer, reconcile the affected work before relying on its previous review or check results. Do not build downstream implementation against unresolved interfaces just to maintain parallel activity.
 
 For each layer, inspect the diff against its immediate parent. Check its expected integrated state as well: a small layer diff does not prove that the cumulative result is safe. Put review fixes in the owning layer, propagate the update, and refresh affected evidence and any required approvals. After a lower PR merges, reconcile the remaining branches with the actual merged result using the repository's workflow. Do not assume a rebase or a nominal base label produced the intended diff.
 
 Follow available repository tooling for stack mechanics. This skill does not require a particular CLI, install extensions, or grant permission to push, merge, or rewrite shared history.
 
-## Freeze implementation scope when review starts
+## Freeze scope when a layer is established
 
-After implementation is complete and a PR enters review, its author focuses on review findings, CI failures, and necessary integration updates for that agreed change. A draft opened for visibility is still in implementation until the author declares it ready for review. New capabilities and discretionary cleanup belong on other branches, not in the review candidate.
+Once a delivery increment is committed or its stacked PR is created, keep that layer focused on review findings, CI failures, and necessary integration updates within its established scope. The boundary applies to draft PRs too. New capabilities and discretionary cleanup belong in another layer. Use a coherent delivery increment as the checkpoint; this does not require turning every temporary local work-in-progress commit into its own PR.
 
 Other authorized agents may continue the remaining PRs in the phase against a stable prerequisite. Work on later phases belongs on separate branches and does not extend the current phase's merge group, even if those branches share its stack. Changing the phase boundary is an explicit scope decision, not an incidental branch addition.
 
-Keep valid correctness findings with the layer that owns them, even during the freeze. If a fix changes the prerequisite contract, notify dependent work, update affected layers, and refresh their evidence and any required approvals. Substantial redesign returns the affected PR to implementation; update its scope and re-enter review when complete. The freeze protects the review target and never excuses an unresolved defect.
+Keep valid correctness findings with the layer that owns them, even during the freeze. Commit hashes may change when fixes are amended or descendants are rebased; the scope boundary remains. If a fix changes the prerequisite contract, coordinate with dependent work, update affected layers, and refresh their evidence and any required approvals. Substantial redesign explicitly returns the affected layer to implementation; update its scope and re-enter review when complete. The freeze protects the review target and never excuses an unresolved defect.
 
 ## Finish and merge the phase together
 
