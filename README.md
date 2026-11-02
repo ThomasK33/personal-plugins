@@ -7,6 +7,7 @@ An [Agent Plugins 1.0.0](https://agent-plugins.org/specification) package for co
 | Skill | When to use it |
 | --- | --- |
 | [deliver-reviewable-changes](skills/deliver-reviewable-changes/SKILL.md) | When planning or implementing code changes, including executing an existing plan, to choose reviewable increments before coding. |
+| [thomas-mode](skills/thomas-mode/SKILL.md) | Only when invoked as `/thomas-mode`. Runs the pstack plugin's `poteto-mode` in the Xum agent harness with Thomas's working rules, a Xum adapter for pstack's Cursor tool names, and amendments to pstack and egm playbook steps. |
 
 The short core skill defines five delivery rules: split before coding, freeze each established layer's scope, stabilize PRs from the bottom up, parallelize against stable prerequisites, and merge a ready phase through its configured gates. The scope freeze starts when a delivery increment is committed or its stacked PR is created, including drafts. Review fixes, CI fixes, and necessary integration updates stay with the owning layer; new scope belongs elsewhere.
 
@@ -38,13 +39,18 @@ The description is written for early discovery. Explicitly invoking the skill ma
 personal-plugins/
 ├── plugin.json
 └── skills/
-    └── deliver-reviewable-changes/
+    ├── deliver-reviewable-changes/
+    │   ├── SKILL.md
+    │   ├── agents/openai.yaml
+    │   └── references/
+    └── thomas-mode/
         ├── SKILL.md
-        ├── agents/openai.yaml
-        └── references/
+        ├── PINNED
+        ├── references/xum-adapter.md
+        └── scripts/check-drift.sh
 ```
 
-The repository distributes one plugin, named `deliver-reviewable-changes` in its manifest. Skills live directly under the standard's fixed `skills/` discovery location. The skill's optional `agents/openai.yaml` carries UI metadata for clients that understand it.
+The repository distributes one plugin, named `deliver-reviewable-changes` in its manifest. `thomas-mode` needs the pstack plugin and works best with egm. Its `scripts/check-drift.sh` compares the installed pstack and egm files with the commits in `PINNED` and reports the playbook steps whose upstream text changed. Skills live directly under the standard's fixed `skills/` discovery location. The skill's optional `agents/openai.yaml` carries UI metadata for clients that understand it.
 
 ## Validate changes
 
