@@ -27,7 +27,7 @@ Precedence: `~/.xum/AGENTS.md`, then his memory (`/memories/global/user-workflow
 His ship prompt is the definition of done:
 
 1. Commit on a branch from fresh `origin/main`.
-2. When the prompt asks for a bug bash, run it. Fix what it finds and repeat until a round finds no regression, incomplete fix or new defect in changed code. Bugs that main had before the loop started become issues, not loop work. Attach the last report as an artifact.
+2. When the prompt asks for a bug bash, run it. Fix what it finds and repeat until a round finds no regression, incomplete fix or new defect in changed code. Bugs that main had before the loop started follow the Swarm-verify amendment: only a bug a user hits in normal use is loop work. Attach the last report as an artifact.
 3. Open the PR and wait for checks.
 4. Merge through the merge queue when CI is green, both Codex lanes are clean on the exact head, and an independent final review finds no issues.
 5. Report landed per the Shipping amendment "Stop at the ceiling".
