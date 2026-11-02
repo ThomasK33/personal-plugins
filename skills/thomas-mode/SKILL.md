@@ -1,22 +1,24 @@
 ---
 name: thomas-mode
-description: "Works in ThomasK33's style on top of pstack's poteto-mode in the Xum agent harness: Xum names for pstack tools, his shipping and review rules, and his amendments to pstack and egm playbook steps. Use only for /thomas-mode, \"thomas mode\", or an explicit request to work in his style."
+description: "Works in ThomasK33's style on top of pstack's poteto-mode in the Xum agent harness: Xum names for pstack tools, his shipping and review rules, and his amendments to pstack and egm playbook steps. Use for /thomas-mode, \"thomas mode\", or an explicit request to work in his style. Also read its Amendments to plugin steps before any pstack or egm step that runs without it, including runs started with \"Using skill poteto-mode\" and /reflect."
 ---
 
 # Thomas mode
 
 Paths are relative to this skill's directory (`skillDir` in the `agent_skill_read` result).
 
+When you load this skill only for its Amendments (a pstack or egm step that runs without `/thomas-mode`), skip steps 1 and 3 below. Still run step 2, then apply only the "Amendments to plugin steps" rules for the steps you run.
+
 1. Load the `pstack-in-xum` skill from the `fux-plugins` plugin. It maps pstack's Cursor names to Xum. When `scripts/check-drift.sh` reports a change to pstack's `docs/harness/claude-code.md`, check whether `pstack-in-xum` needs a new row.
 2. Run `scripts/check-drift.sh`. On exit 1, name each changed file and read its diff (`--diff`, redirected to a file) for the steps this skill amends. Tell the user what changed before you follow an amended step. Do not stop. On exit 2, report the error and continue without the check.
 3. Load `pstack:poteto-mode` with `agent_skill_read` and follow it, with the rules below.
 
-Precedence: `~/.xum/AGENTS.md`, then his memory (`/memories/global/user-workflow-preferences.md`, read it with the `memory` tool at task start), then this skill, then poteto-mode and its playbooks. This skill does not repeat AGENTS.md or memory.
+Precedence: `~/.xum/AGENTS.md`, then his memory (`/memories/global/user-workflow-preferences.md`, read it with the `memory` tool at task start and after every context rollover), then this skill, then poteto-mode and its playbooks. This skill does not repeat AGENTS.md or memory.
 
 ## Where poteto-mode yields
 
 - **PRs.** "Land", "get it merged", "ship it", or his ship prompt is the request to open a PR and merge it. "Fix" alone is not. Then poteto-mode's "Opening a PR" runs.
-- **Review rounds.** AGENTS.md section 5 caps review at six rounds per PR. It replaces any round count in a playbook.
+- **Review rounds.** AGENTS.md section 5 caps review at six rounds per PR. It replaces any round count in a playbook. Its section 5.3 clean-context advisor runs before each merge decision, at any round count. A verifier does not replace it.
 - **Subagents.** Pass `model: "anthropic:claude-opus-5-5"` on every `task` unless a pstack role line says otherwise.
 - **Reply style.** Follow both AGENTS.md "Plain English" and poteto-mode "Writing the reply". Where they differ, AGENTS.md wins.
 
@@ -25,22 +27,22 @@ Precedence: `~/.xum/AGENTS.md`, then his memory (`/memories/global/user-workflow
 His ship prompt is the definition of done:
 
 1. Commit on a branch from fresh `origin/main`.
-2. When the prompt asks for a bug bash, run it. Fix what it finds and repeat until a round finds nothing new. Attach the last report as an artifact.
+2. When the prompt asks for a bug bash, run it. Fix what it finds and repeat until a round finds no regression, incomplete fix or new defect in changed code. Bugs that main had before the loop started follow the Swarm-verify amendment: only a bug a user hits in normal use is loop work. Attach the last report as an artifact.
 3. Open the PR and wait for checks.
-4. Merge through the merge queue when CI is green, Codex has no open comments, and an independent final review finds no issues.
+4. Merge through the merge queue when CI is green, both Codex lanes are clean on the exact head, and an independent final review finds no issues.
 5. Report landed per the Shipping amendment "Stop at the ceiling".
 
 - **Merge is your job** once he asked for it. Never end with "PR is open, do you want me to merge?". `--admin` needs his explicit word in this chat. A bypass list is not that word.
 - **Pixel does not block.** Ignore the `Pixel / Review` status.
 - **A silent Codex blocks.** Re-request the review once after about an hour. If Codex is still silent, report it and ask. Merge without a Codex verdict only on his word for that PR.
-- **Fix now.** Fix a concrete defect in or next to the work in this branch, or in a sub-agent PR that you drive to merged. Do not offer to file an issue. Defer only scope creep, as defined in memory ("a fix bigger than the original change").
+- **Fix now.** Fix a concrete defect in or next to the work in this branch, or in a sub-agent PR that you drive to merged. Do not offer to file an issue. Defer only scope creep, as defined in memory ("a fix bigger than the original change"). A known gap that a PR documents instead of fixing is a deferral: open its tracking issue before the merge, and link it from one contract line instead of listing its conditions. (A data-loss gap lived only in closed issues and a 7,954-character README bullet until a trail review flagged it.)
 
 ## Doing the work
 
 - **Never hand him a step you can do.** Use `gh`, the Xum CLI, and the other CLIs to check state, find IDs, and merge.
 - **Prefer the real fix.** Cut scope, delete code, and remove a race by construction instead of adding a heuristic or a workaround.
 - **UI and HTML artifacts.** Check at phone width (mobile Safari) and in dark mode before you publish. Apply the `coder-brand` skill to visual output. When you fix a UI bug, find siblings with the same defect and fix them in the same PR.
-- **Verification skills.** "Verify and formally verify" means run the repo's verification skill and its formal-verification skill. When the repo has none, create them with `create-verification-skill` and `create-formal-verification-skill`, land them, then fix what they find.
+- **Verification skills.** "Verify and formally verify" means run the repo's verification skill and its formal-verification skill. When the repo has none, create them with `create-verification-skill` and `create-formal-verification-skill`, land them, then fix what they find. When a scratch harness catches a blocker, add it to the repo's verification skill, or to its test folder when it has none. Memory points at repo paths, never at a workspace's scratch folder. (The matrices that caught the claudecode.nvim blockers lived only in sub-agent scratch folders.)
 - **Forks in research.** When research ends in "which approach" or "should we build this", write an `html-plan` with the decisions on it. Do not end with an offer.
 - **Long or fan-out work.** Keep a `status-page` artifact. On his stop order, stop every sub-agent, monitor, and heartbeat. On "wind down", archive the helper workspaces this chat created. Delete one only when he says delete.
 - **End every final report with a verdict.** Done or Not done, what merged, and what is still open. No "if you want" offers.
@@ -53,7 +55,7 @@ Each rule names the plugin step it changes as `[<plugin> <path> § <step title>]
 
 [pstack skills/poteto-mode/playbooks/autopilot-full.md § Spawn one owner per PR]
 
-- Every owner brief says: report only a new head, code-ready, merge-ready, a blocker, or a question. Never report "nothing changed" after a wake. Each report wakes the root and costs one turn. (A program used 116 of 120 turns and only $324 of $450.)
+- Every owner brief says: report only a new head, code-ready, merge-ready, a blocker, or a question. Never report "nothing changed" after a wake. Each report wakes the root and costs one turn. (A program used 116 of 120 turns and only $324 of $450.) Verify briefs say the same. Before any report, an owner or verifier stops every poller and monitor it started: the late wakes come from pollers that outlive the report.
 - The root sends no reply after a wake that changed nothing.
 - "Checks for the touched paths" means typecheck plus every test folder that imports or reaches the changed modules, never only the test files a plan lists. (An owner missed a broken existing unit test.)
 
@@ -64,13 +66,17 @@ Each rule names the plugin step it changes as `[<plugin> <path> § <step title>]
 
 [pstack skills/poteto-mode/playbooks/autopilot-full.md § Swarm-verify once]
 
+- A fix that answers a verifier's ISSUES verdict, or any edit the root makes itself, is never "wording-only". It gets one root-briefed verifier at the new head. A verifier never stands in for clean Codex lanes on the exact head or for the section 5.3 advisor. Past the review cap, that needs his waiver for the PR. (A loop merged five PRs on the root's own diff read, and one past six Codex rounds on a verifier's word.)
+- Every verify brief asks for one closing line per requested PR: `VERDICT #<pr> <40-char sha> PASS|ISSUES`. Merge only on a line whose PR and SHA match the head. A missing line means ask again. (A long-lived verifier answered two queued PRs in one turn and reported one.)
+- In a loop whose verifiers file follow-ups, "a problem the PR's base already has" means the commit where the loop started, not current trunk. A regression the loop introduced is always loop work. Of the problems that were already there at loop start, only a bug a user hits in normal use becomes loop work. The rest goes to one parking issue that the loop does not work. (Nine follow-up issues ran back to back, and an overwrite that one PR introduced was later called a known gap on main.)
 - Add a spec lane. It checks the diff against each numbered decision of the governing spec or RFC. (Behavior tests alone passed a PR that broke one.)
 - A docs PR gets a claim lane. It checks each changed sentence against the code, with file:line. Only lanes the root briefs count. A helper that the owner briefed is not independent.
 - An evidence script prints one short line per result and ends with a count line. A receipt without its count line is unchecked. (The bash tool dropped an over-long line, and 111 failures read as a pass. Tool request: coder/xum#7876.)
 
 [pstack skills/poteto-mode/playbooks/autopilot-full.md § Run the root layer]
 
-- By the fourth review round with findings in one area, stop asking for a waiver per round. Ask the operator one question whose options include narrowing the scope or redesigning that area.
+- By the fourth review round with findings in one area, counted across every PR and follow-up issue that reopens that area, stop asking for a waiver per round. Ask the operator one question whose options include narrowing the scope or redesigning that area. When you close an area, write the banned premise (such as "no proxy for editor state that has no API") into the next issue and every brief for that area. (openFile's reload code took about 19 Codex rounds over six PRs, and the owner after a "stop adding mechanism" decision added a proxy that regressed.)
+- At every round boundary and after every context rollover, read his memory and the playbook again. Check the checkpoint's flow against the playbook step by step, copy the per-round rules (status page, spend from `session-usage.json`, trunk CI) into the checkpoint, and rebuild the owner and verifier briefs from the trail. (A 30-hour loop followed its own checkpoint flow, which ran the verifier after the Codex rounds, and it published no status page and no spend.)
 - Decide when to stop by the severity of new findings, not by the round count. On security and trust code, do not stop early: late rounds kept finding real P1s. Rounds past six still need his waiver.
 - When the same gate false positive blocks a second PR, fix the gate in its own PR. Do not approve the bypass again.
 
@@ -92,6 +98,7 @@ Each rule names the plugin step it changes as `[<plugin> <path> § <step title>]
 
 [pstack skills/poteto-mode/playbooks/shipping.md § Re-check that the verdicts still describe the code]
 
+- A verdict carries across a committed file that a repo tool regenerates (such as a lock file) when the tool's own check passes at the new head and the PR's own change outside that file is the same as at the verified head. Compare with `--binary --no-textconv --no-ext-diff`, and treat any git error as a change. PRs that regenerate the same file do it one at a time, each after the previous one reads MERGED. When both sides changed the same source file, the merge result gets fresh checks. (claudecode.nvim `covered.lock`, 2026-11.)
 - Prove that each upper branch contains every lower PR's final head (`git merge-base --is-ancestor`). If one does not, merge it up and re-verify that PR, docs included. (Script request: coder/xum#7873.)
 
 [pstack skills/poteto-mode/playbooks/shipping.md § Land bottom-up, one PR at a time]
@@ -101,7 +108,13 @@ Each rule names the plugin step it changes as `[<plugin> <path> § <step title>]
 
 [pstack skills/poteto-mode/playbooks/shipping.md § Stop at the ceiling]
 
-- Count a PR as landed only after trunk's post-merge CI on its commit passes, and report that result.
+- Count a PR as landed only after the post-merge runs on its merge commit have settled and none of them failed, `Required` or not (release jobs included). `success`, `neutral` and `skipped` count as passing. Post-merge workflows can start late, and a PR that adds, removes or renames a workflow changes the set, so check those workflows by name. Report the result. (release-please went red on main during a loop that checked only `Required`.)
+
+### Show me your work
+
+[pstack skills/show-me-your-work/SKILL.md § Cross-model review of the trail]
+
+- In a loop that does not hand back, run this review at each round boundary (each closed follow-up issue), not only before handing back. Give the reviewer the Xum transcript paths (`~/.xum/sessions/<ws>/chat.jsonl` and `chat-archive.jsonl`) or a digest, as in the Reflect amendment. (Five under-verified merges landed in a 24-hour gap between reviews.)
 
 ### Reflect
 
