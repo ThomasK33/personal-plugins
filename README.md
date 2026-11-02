@@ -7,6 +7,7 @@ An [Agent Plugins 1.0.0](https://agent-plugins.org/specification) package for co
 | Skill | When to use it |
 | --- | --- |
 | [deliver-reviewable-changes](skills/deliver-reviewable-changes/SKILL.md) | When planning or implementing code changes, including executing an existing plan, to choose reviewable increments before coding. |
+| [refactor-split-stack](skills/refactor-split-stack/SKILL.md) | When planning or running a behaviour-preserving refactor that splits long methods or a large file across several stacks of PRs, written by sub-agent workers. |
 | [thomas-mode](skills/thomas-mode/SKILL.md) | Only when invoked as `/thomas-mode`. Runs the pstack plugin's `poteto-mode` in the Xum agent harness with Thomas's working rules, a Xum adapter for pstack's Cursor tool names, and amendments to pstack and egm playbook steps. |
 
 The short core skill defines five delivery rules: split before coding, freeze each established layer's scope, stabilize PRs from the bottom up, parallelize against stable prerequisites, and merge a ready phase through its configured gates. The scope freeze starts when a delivery increment is committed or its stacked PR is created, including drafts. Review fixes, CI fixes, and necessary integration updates stay with the owning layer; new scope belongs elsewhere.
@@ -43,6 +44,8 @@ personal-plugins/
     │   ├── SKILL.md
     │   ├── agents/openai.yaml
     │   └── references/
+    ├── refactor-split-stack/
+    │   └── SKILL.md
     └── thomas-mode/
         ├── SKILL.md
         ├── PINNED
