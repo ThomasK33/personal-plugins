@@ -7,15 +7,17 @@ description: Splits long methods or a large file into small named steps with no 
 
 One stack per method. The parent writes briefs, applies patches, opens and lands the PRs. Workers only commit.
 
+Written for Xum sub-agents on a repo with a merge queue, Codex review and a CC gate (coder/xum). It needs the `gh stack` extension (`gh extension install github/gh-stack`) and the `html-plan` skill from `coder/fux-plugins`. In another repo, take the size, complexity, test and lint commands from that repo.
+
 ## Pipeline per stack
 
 1. **Map** (read-only sub-agent, at a named commit): phases in order, same-tick and lock-order invariants with their comments, mutable locals shared across phases, the proposed steps with their CC, line coverage per step, and the changed-line estimate per PR.
-2. **Plan** with the `html-plan` skill. A suspected bug that the map finds gets reproduced before it becomes a decision. A confirmed one is fixed in its own PR before the stack.
+2. **Plan** with the `html-plan` skill. A suspected bug that the map finds gets reproduced before it becomes a decision. A confirmed one is fixed in its own PR, and once it lands, map and plan again on the new trunk.
 3. **Test PR first.** Characterization tests cover every uncovered path of the method and pass on the base. Over 500 changed lines, split it into as many test PRs as keep each one within 500.
 4. **Split PRs, tail first.** Each at most 500 changed lines, each green on its own, and every new function CC 8 or less.
-5. **Hand-mutation pass** of the new steps against the suites that drive the method. The repo's mutation gate picks suites by import, which can miss the method. Report each survivor as killed, equivalent, or a gap. A gap becomes one extra tests-only commit below the split.
+5. **Hand-mutation pass** of the new steps against the suites that drive the method. The repo's mutation gate picks suites by import, which can miss the method. Report each survivor as killed, equivalent, or a gap. Run it before any PR of the stack opens, so a gap becomes one extra tests-only commit below the split.
 6. **Review.** Codex on every PR, then one clean-context advisor before the stack's merge decision (the AGENTS.md advisor rule; the stack is the unit you decide): a fresh `exec` on a judgment-tier model, given the goal, the diff, the findings and the test results only.
-7. **Land** with the `gh stack` extension (`gh extension install github/gh-stack`): `gh stack link`, then `gh stack merge <stack#> --yes`. Watch every member until it is merged or removed from the queue.
+7. **Land** with `gh stack link <bottom-pr> ... <top-pr>`, then `gh stack merge <stack#> --yes`. Watch every member until it is merged or removed from the queue.
 
 ## Briefs
 
