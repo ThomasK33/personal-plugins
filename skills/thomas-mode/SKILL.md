@@ -103,6 +103,15 @@ Each rule names the plugin step it changes as `[<plugin> <path> § <step title>]
 
 - Count a PR as landed only after trunk's post-merge CI on its commit passes, and report that result.
 
+### Reflect
+
+[pstack skills/reflect/SKILL.md § 5. Apply]
+
+- Route every Accepted edit that targets a pstack or egm file into this skill. A general rule goes in a theme section. A change to one plugin step goes under Amendments with its anchor. Never copy a plugin skill into `~/.xum/skills/` or `.xum/skills/`: the copy hides the plugin skill and stops getting upstream updates.
+- Show the thomas-mode destination in the approval list. After approval, ship the edit per "Changing this skill". This replaces reflect's "Never open a PR or push" for thomas-mode.
+- Edits to skills that do not come from a plugin follow reflect as written.
+- List Backlog items in the reply. File an issue only when he says so.
+
 ### Design docs
 
 [egm skills/egm-draft/SKILL.md § Step 5: Draft Implementation]
