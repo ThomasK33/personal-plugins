@@ -7,7 +7,7 @@ description: "Works in ThomasK33's style on top of pstack's poteto-mode in the X
 
 Paths are relative to this skill's directory (`skillDir` in the `agent_skill_read` result).
 
-When you load this skill only for its Amendments (a pstack or egm step that runs without `/thomas-mode`), skip steps 1 to 3 below and apply only the "Amendments to plugin steps" rules for the steps you run.
+When you load this skill only for its Amendments (a pstack or egm step that runs without `/thomas-mode`), skip steps 1 and 3 below. Still run step 2, then apply only the "Amendments to plugin steps" rules for the steps you run.
 
 1. Load the `pstack-in-xum` skill from the `fux-plugins` plugin. It maps pstack's Cursor names to Xum. When `scripts/check-drift.sh` reports a change to pstack's `docs/harness/claude-code.md`, check whether `pstack-in-xum` needs a new row.
 2. Run `scripts/check-drift.sh`. On exit 1, name each changed file and read its diff (`--diff`, redirected to a file) for the steps this skill amends. Tell the user what changed before you follow an amended step. Do not stop. On exit 2, report the error and continue without the check.
@@ -98,7 +98,7 @@ Each rule names the plugin step it changes as `[<plugin> <path> § <step title>]
 
 [pstack skills/poteto-mode/playbooks/shipping.md § Re-check that the verdicts still describe the code]
 
-- A verdict carries across a committed file that a repo tool regenerates (such as a lock file) when the tool's own check passes at the new head, and the diff without that file hashes the same as at the verified head (`git diff --binary <base> <head> -- . ':!<file>' | sed '/^index /d' | sha256sum`). PRs that regenerate the same file do it one at a time, each after the previous one reads MERGED. When both sides changed the same source file, the merge result gets fresh checks. (claudecode.nvim `covered.lock`, 2026-11.)
+- A verdict carries across a committed file that a repo tool regenerates (such as a lock file) when the tool's own check passes at the new head, and the diff without that file hashes the same as at the verified head (`(set -o pipefail; git diff --binary <base> <head> -- . ':!<file>' | sed '/^index /d' | sha256sum)`, and a non-zero exit means no carry-over). PRs that regenerate the same file do it one at a time, each after the previous one reads MERGED. When both sides changed the same source file, the merge result gets fresh checks. (claudecode.nvim `covered.lock`, 2026-11.)
 - Prove that each upper branch contains every lower PR's final head (`git merge-base --is-ancestor`). If one does not, merge it up and re-verify that PR, docs included. (Script request: coder/xum#7873.)
 
 [pstack skills/poteto-mode/playbooks/shipping.md § Land bottom-up, one PR at a time]
@@ -108,7 +108,7 @@ Each rule names the plugin step it changes as `[<plugin> <path> § <step title>]
 
 [pstack skills/poteto-mode/playbooks/shipping.md § Stop at the ceiling]
 
-- Count a PR as landed only after every check run on its merge commit ends `success`, `neutral` or `skipped`, `Required` or not (release jobs included), and report that result. (release-please went red on main during a loop that checked only `Required`.)
+- Count a PR as landed only after every check run on its merge commit ends `success`, `neutral` or `skipped`, `Required` or not (release jobs included), and report that result. First wait until the merge commit has every check that the previous trunk commit got, because post-merge workflows can start late. (release-please went red on main during a loop that checked only `Required`.)
 
 ### Show me your work
 
