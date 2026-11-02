@@ -22,7 +22,7 @@ One stack per method. The parent writes briefs, applies patches, opens and lands
 - One shared brief of hard rules plus one brief per layer. After each stack, add its lessons to the shared brief as hard rules.
 - Put every plan limit in the brief as a command whose output the worker reports: `git show --numstat`, `make crap-check BASE=<parent>`, the targeted test list, the typecheck, `make static-check`. A limit that lives only in the plan gets broken.
 - Use absolute paths. A child cannot read the parent's scratch folder.
-- The worker commits and does not push. The parent applies the patch, rebuilds each branch on a fresh `origin/main` by cherry-pick, and opens the PRs.
+- The worker commits and does not push. The parent applies the patch, builds the bottom branch on a fresh `origin/main` and each upper branch on the branch below it, by cherry-pick, and opens the PRs.
 - A worker's optional commit built with `git commit-tree` has no ref. Pin it with a branch before you remove the worker.
 
 ## Splitting async code without a behaviour change
