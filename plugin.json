@@ -1,8 +1,8 @@
 {
   "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
   "name": "deliver-reviewable-changes",
-  "version": "0.1.6",
-  "description": "Plan and implement code changes in small, reviewable increments, including when executing an existing plan.",
+  "version": "0.2.0",
+  "description": "Plan and implement code changes in small, reviewable increments, including when executing an existing plan. Also ships thomas-mode, Thomas's working rules on top of pstack in Xum.",
   "author": {
     "name": "Thomas Kosiewski",
     "url": "https://github.com/thomask33"
