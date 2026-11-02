@@ -13,8 +13,8 @@ One stack per method. The parent writes briefs, applies patches, opens and lands
 2. **Plan** with the `html-plan` skill. A suspected bug that the map finds gets reproduced before it becomes a decision. A confirmed one is fixed in its own PR before the stack.
 3. **Test PR first.** Characterization tests cover every uncovered path of the method and pass on the base. Over 500 changed lines, split it into two test PRs.
 4. **Split PRs, tail first.** Each at most 500 changed lines, each green on its own, and every new function CC 8 or less.
-5. **Hand-mutation pass** of the new steps against the suites that drive the method. A gap becomes one extra tests-only commit below the split.
-6. **Review.** Codex on every PR, then one clean-context advisor per stack (the AGENTS.md advisor rule): a fresh `exec` on a judgment-tier model, given the goal, the diff, the findings and the test results only.
+5. **Hand-mutation pass** of the new steps against the suites that drive the method. The repo's mutation gate picks suites by import, which can miss the method. Report each survivor as killed, equivalent, or a gap. A gap becomes one extra tests-only commit below the split.
+6. **Review.** Codex on every PR, then one clean-context advisor before the stack's merge decision (the AGENTS.md advisor rule; the stack is the unit you decide): a fresh `exec` on a judgment-tier model, given the goal, the diff, the findings and the test results only.
 7. **Land** with `gh stack link` and `gh stack merge <stack#> --yes`. Watch every member until it is merged or removed from the queue.
 
 ## Briefs
@@ -34,7 +34,3 @@ One stack per method. The parent writes briefs, applies patches, opens and lands
 - Keep the instance calls that tests spy on, by name.
 - Prove it with an old-versus-new trace over the test scenarios: calls, reads, awaits and lock events, each with its microtask stamp. Report every drift, such as a later release.
 - A timeout in a suite that a timing-shifting split touched needs a base-versus-head rerun before you call it a flake.
-
-## Mutation checks
-
-When more test files import the source than the mutation gate selects, its report says nothing about the changed method. Run a bounded hand-mutation pass with the method's own suites instead, and report each survivor as killed, equivalent, or a gap.
