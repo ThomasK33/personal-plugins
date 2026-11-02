@@ -46,11 +46,10 @@ personal-plugins/
     └── thomas-mode/
         ├── SKILL.md
         ├── PINNED
-        ├── references/xum-adapter.md
         └── scripts/check-drift.sh
 ```
 
-The repository distributes one plugin, named `personal-plugins` in its manifest. `thomas-mode` needs the pstack plugin and works best with egm. Its `scripts/check-drift.sh` compares the installed pstack and egm files with the commits in `PINNED` and reports the playbook steps whose upstream text changed. Skills live directly under the standard's fixed `skills/` discovery location. The skill's optional `agents/openai.yaml` carries UI metadata for clients that understand it.
+The repository distributes one plugin, named `personal-plugins` in its manifest. `thomas-mode` needs the pstack plugin and the `pstack-in-xum` skill from `coder/fux-plugins`, and works best with egm. Its `scripts/check-drift.sh` compares the installed pstack and egm files with the commits in `PINNED` and reports the playbook steps whose upstream text changed. Skills live directly under the standard's fixed `skills/` discovery location. The skill's optional `agents/openai.yaml` carries UI metadata for clients that understand it.
 
 ## Validate changes
 
