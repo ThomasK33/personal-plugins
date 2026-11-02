@@ -7,6 +7,8 @@ description: "Works in ThomasK33's style on top of pstack's poteto-mode in the X
 
 Paths are relative to this skill's directory (`skillDir` in the `agent_skill_read` result).
 
+When you load this skill only for its Amendments (a pstack or egm step that runs without `/thomas-mode`), skip steps 1 to 3 below and apply only the "Amendments to plugin steps" rules for the steps you run.
+
 1. Load the `pstack-in-xum` skill from the `fux-plugins` plugin. It maps pstack's Cursor names to Xum. When `scripts/check-drift.sh` reports a change to pstack's `docs/harness/claude-code.md`, check whether `pstack-in-xum` needs a new row.
 2. Run `scripts/check-drift.sh`. On exit 1, name each changed file and read its diff (`--diff`, redirected to a file) for the steps this skill amends. Tell the user what changed before you follow an amended step. Do not stop. On exit 2, report the error and continue without the check.
 3. Load `pstack:poteto-mode` with `agent_skill_read` and follow it, with the rules below.
@@ -25,7 +27,7 @@ Precedence: `~/.xum/AGENTS.md`, then his memory (`/memories/global/user-workflow
 His ship prompt is the definition of done:
 
 1. Commit on a branch from fresh `origin/main`.
-2. When the prompt asks for a bug bash, run it. Fix what it finds and repeat until a round finds no regression, incomplete fix or new defect in changed code. Bugs that main already had become issues, not loop work. Attach the last report as an artifact.
+2. When the prompt asks for a bug bash, run it. Fix what it finds and repeat until a round finds no regression, incomplete fix or new defect in changed code. Bugs that main had before the loop started become issues, not loop work. Attach the last report as an artifact.
 3. Open the PR and wait for checks.
 4. Merge through the merge queue when CI is green, both Codex lanes are clean on the exact head, and an independent final review finds no issues.
 5. Report landed per the Shipping amendment "Stop at the ceiling".
@@ -40,7 +42,7 @@ His ship prompt is the definition of done:
 - **Never hand him a step you can do.** Use `gh`, the Xum CLI, and the other CLIs to check state, find IDs, and merge.
 - **Prefer the real fix.** Cut scope, delete code, and remove a race by construction instead of adding a heuristic or a workaround.
 - **UI and HTML artifacts.** Check at phone width (mobile Safari) and in dark mode before you publish. Apply the `coder-brand` skill to visual output. When you fix a UI bug, find siblings with the same defect and fix them in the same PR.
-- **Verification skills.** "Verify and formally verify" means run the repo's verification skill and its formal-verification skill. When the repo has none, create them with `create-verification-skill` and `create-formal-verification-skill`, land them, then fix what they find. When a scratch harness catches a blocker, add it to the repo's verification skill. Memory points at repo paths, never at a workspace's scratch folder. (The matrices that caught the claudecode.nvim blockers lived only in sub-agent scratch folders.)
+- **Verification skills.** "Verify and formally verify" means run the repo's verification skill and its formal-verification skill. When the repo has none, create them with `create-verification-skill` and `create-formal-verification-skill`, land them, then fix what they find. When a scratch harness catches a blocker, add it to the repo's verification skill, or to its test folder when it has none. Memory points at repo paths, never at a workspace's scratch folder. (The matrices that caught the claudecode.nvim blockers lived only in sub-agent scratch folders.)
 - **Forks in research.** When research ends in "which approach" or "should we build this", write an `html-plan` with the decisions on it. Do not end with an offer.
 - **Long or fan-out work.** Keep a `status-page` artifact. On his stop order, stop every sub-agent, monitor, and heartbeat. On "wind down", archive the helper workspaces this chat created. Delete one only when he says delete.
 - **End every final report with a verdict.** Done or Not done, what merged, and what is still open. No "if you want" offers.
@@ -96,7 +98,7 @@ Each rule names the plugin step it changes as `[<plugin> <path> § <step title>]
 
 [pstack skills/poteto-mode/playbooks/shipping.md § Re-check that the verdicts still describe the code]
 
-- A verdict carries across a committed file that a repo tool regenerates (such as a lock file) when the tool's own check passes at the new head, and the diff without that file hashes the same as at the verified head (`git diff <base> <head> -- . ':!<file>' | grep -v '^index ' | sha256sum`). PRs that regenerate the same file do it one at a time, each after the previous one reads MERGED. When both sides changed the same source file, the merge result gets fresh checks. (claudecode.nvim `covered.lock`, 2026-11.)
+- A verdict carries across a committed file that a repo tool regenerates (such as a lock file) when the tool's own check passes at the new head, and the diff without that file hashes the same as at the verified head (`git diff --binary <base> <head> -- . ':!<file>' | sed '/^index /d' | sha256sum`). PRs that regenerate the same file do it one at a time, each after the previous one reads MERGED. When both sides changed the same source file, the merge result gets fresh checks. (claudecode.nvim `covered.lock`, 2026-11.)
 - Prove that each upper branch contains every lower PR's final head (`git merge-base --is-ancestor`). If one does not, merge it up and re-verify that PR, docs included. (Script request: coder/xum#7873.)
 
 [pstack skills/poteto-mode/playbooks/shipping.md § Land bottom-up, one PR at a time]
@@ -106,7 +108,7 @@ Each rule names the plugin step it changes as `[<plugin> <path> § <step title>]
 
 [pstack skills/poteto-mode/playbooks/shipping.md § Stop at the ceiling]
 
-- Count a PR as landed only after every check run on its merge commit passes, `Required` or not (release jobs included), and report that result. (release-please went red on main during a loop that checked only `Required`.)
+- Count a PR as landed only after every check run on its merge commit ends `success`, `neutral` or `skipped`, `Required` or not (release jobs included), and report that result. (release-please went red on main during a loop that checked only `Required`.)
 
 ### Show me your work
 
