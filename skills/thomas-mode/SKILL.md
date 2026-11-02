@@ -98,7 +98,7 @@ Each rule names the plugin step it changes as `[<plugin> <path> § <step title>]
 
 [pstack skills/poteto-mode/playbooks/shipping.md § Re-check that the verdicts still describe the code]
 
-- A verdict carries across a committed file that a repo tool regenerates (such as a lock file) when the tool's own check passes at the new head, and the diff without that file hashes the same as at the verified head (`(set -o pipefail; git diff --binary <base> <head> -- . ':!<file>' | sed '/^index /d' | sha256sum)`, and a non-zero exit means no carry-over). PRs that regenerate the same file do it one at a time, each after the previous one reads MERGED. When both sides changed the same source file, the merge result gets fresh checks. (claudecode.nvim `covered.lock`, 2026-11.)
+- A verdict carries across a committed file that a repo tool regenerates (such as a lock file) when the tool's own check passes at the new head and the PR's own change outside that file is the same as at the verified head. Compare with `--binary --no-textconv --no-ext-diff`, and treat any git error as a change. PRs that regenerate the same file do it one at a time, each after the previous one reads MERGED. When both sides changed the same source file, the merge result gets fresh checks. (claudecode.nvim `covered.lock`, 2026-11.)
 - Prove that each upper branch contains every lower PR's final head (`git merge-base --is-ancestor`). If one does not, merge it up and re-verify that PR, docs included. (Script request: coder/xum#7873.)
 
 [pstack skills/poteto-mode/playbooks/shipping.md § Land bottom-up, one PR at a time]
@@ -108,13 +108,13 @@ Each rule names the plugin step it changes as `[<plugin> <path> § <step title>]
 
 [pstack skills/poteto-mode/playbooks/shipping.md § Stop at the ceiling]
 
-- Count a PR as landed only after every check run on its merge commit ends `success`, `neutral` or `skipped`, `Required` or not (release jobs included), and report that result. First wait until the merge commit has every check that the previous trunk commit got, because post-merge workflows can start late. (release-please went red on main during a loop that checked only `Required`.)
+- Count a PR as landed only after the post-merge runs on its merge commit have settled and none of them failed, `Required` or not (release jobs included). `success`, `neutral` and `skipped` count as passing. Post-merge workflows can start late, and a PR that adds, removes or renames a workflow changes the set, so check those workflows by name. Report the result. (release-please went red on main during a loop that checked only `Required`.)
 
 ### Show me your work
 
 [pstack skills/show-me-your-work/SKILL.md § Cross-model review of the trail]
 
-- In a loop that does not hand back, run this review at each round boundary (each closed follow-up issue), not only before handing back. (Five under-verified merges landed in a 24-hour gap between reviews.)
+- In a loop that does not hand back, run this review at each round boundary (each closed follow-up issue), not only before handing back. Give the reviewer the Xum transcript paths (`~/.xum/sessions/<ws>/chat.jsonl` and `chat-archive.jsonl`) or a digest, as in the Reflect amendment. (Five under-verified merges landed in a 24-hour gap between reviews.)
 
 ### Reflect
 
