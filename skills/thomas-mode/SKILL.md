@@ -7,7 +7,7 @@ description: "Works in ThomasK33's style on top of pstack's poteto-mode in the X
 
 Paths are relative to this skill's directory (`skillDir` in the `agent_skill_read` result).
 
-1. Read [references/xum-adapter.md](references/xum-adapter.md). It maps pstack's Cursor names to Xum.
+1. Load the `pstack-in-xum` skill from the `fux-plugins` plugin. It maps pstack's Cursor names to Xum. When `scripts/check-drift.sh` reports a change to pstack's `docs/harness/claude-code.md`, check whether `pstack-in-xum` needs a new row.
 2. Run `scripts/check-drift.sh`. On exit 1, name each changed file and read its diff (`--diff`, redirected to a file) for the steps this skill amends. Tell the user what changed before you follow an amended step. Do not stop. On exit 2, report the error and continue without the check.
 3. Load `pstack:poteto-mode` with `agent_skill_read` and follow it, with the rules below.
 

@@ -1,7 +1,7 @@
 {
   "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
   "name": "personal-plugins",
-  "version": "0.3.0",
+  "version": "0.3.1",
   "description": "Thomas Kosiewski's agent skills: deliver-reviewable-changes for small, reviewable increments, and thomas-mode for his working rules on top of pstack in Xum.",
   "author": {
     "name": "Thomas Kosiewski",
