@@ -27,7 +27,7 @@ Precedence: `~/.xum/AGENTS.md`, then his memory (`/memories/global/user-workflow
 His ship prompt is the definition of done:
 
 1. Commit on a branch from fresh `origin/main`.
-2. When the prompt asks for a bug bash, run it. Fix what it finds and repeat until a round finds no regression, incomplete fix or new defect in changed code. Bugs that main had before the loop started follow the Swarm-verify amendment: only a bug a user hits in normal use is loop work. Attach the last report as an artifact.
+2. When the prompt asks for a bug bash, run it. Fix what it finds and repeat until a round finds no regression, incomplete fix or new defect in changed code. A loop is a run of rounds with a stop rule. Bugs that main had before the loop started follow the Swarm-verify amendment: only a bug a user hits in normal use is loop work. Attach the last report as an artifact.
 3. Open the PR and wait for checks.
 4. Merge through the merge queue when CI is green, both Codex lanes are clean on the exact head, and an independent final review finds no issues.
 5. Report landed per the Shipping amendment "Stop at the ceiling".
@@ -55,7 +55,7 @@ Each rule names the plugin step it changes as `[<plugin> <path> § <step title>]
 
 [pstack skills/poteto-mode/playbooks/autopilot-full.md § Spawn one owner per PR]
 
-- Every owner brief says: report only a new head, code-ready, merge-ready, a blocker, or a question. Never report "nothing changed" after a wake. Each report wakes the root and costs one turn. (A program used 116 of 120 turns and only $324 of $450.) Verify briefs say the same. Before any report, an owner or verifier stops every poller and monitor it started: the late wakes come from pollers that outlive the report.
+- Every owner brief says: report only a new head, code-ready, merge-ready, a blocker, or a question. Never report "nothing changed" after a wake. Each report wakes the root and costs one turn. (A program used 116 of 120 turns and only 324 USD of a 450 USD budget.)
 - The root sends no reply after a wake that changed nothing.
 - "Checks for the touched paths" means typecheck plus every test folder that imports or reaches the changed modules, never only the test files a plan lists. (An owner missed a broken existing unit test.)
 
@@ -66,8 +66,9 @@ Each rule names the plugin step it changes as `[<plugin> <path> § <step title>]
 
 [pstack skills/poteto-mode/playbooks/autopilot-full.md § Swarm-verify once]
 
-- A fix that answers a verifier's ISSUES verdict, or any edit the root makes itself, is never "wording-only". It gets one root-briefed verifier at the new head. A verifier never stands in for clean Codex lanes on the exact head or for the section 5.3 advisor. Past the review cap, that needs his waiver for the PR. (A loop merged five PRs on the root's own diff read, and one past six Codex rounds on a verifier's word.)
+- A fix that answers a verifier's ISSUES verdict, or any edit the root makes itself, is never "wording-only". It gets one root-briefed verifier at the new head. When the root regenerates a committed file with a repo tool, such as a lock file, the regenerated-file rule under "Re-check that the verdicts still describe the code" wins. A verifier never stands in for clean Codex lanes on the exact head or for the section 5.3 advisor. Past the review cap, a merge without clean Codex lanes on the exact head needs his waiver for the PR. (A loop merged five PRs on the root's own diff read, and one past six Codex rounds on a verifier's word.)
 - Every verify brief asks for one closing line per requested PR: `VERDICT #<pr> <40-char sha> PASS|ISSUES`. Merge only on a line whose PR and SHA match the head. A missing line means ask again. (A long-lived verifier answered two queued PRs in one turn and reported one.)
+- Verify briefs say the same. Before any report, an owner or verifier stops every poller and monitor it started: the late wakes come from pollers that outlive the report.
 - In a loop whose verifiers file follow-ups, "a problem the PR's base already has" means the commit where the loop started, not current trunk. A regression the loop introduced is always loop work. Of the problems that were already there at loop start, only a bug a user hits in normal use becomes loop work. The rest goes to one parking issue that the loop does not work. (Nine follow-up issues ran back to back, and an overwrite that one PR introduced was later called a known gap on main.)
 - Add a spec lane. It checks the diff against each numbered decision of the governing spec or RFC. (Behavior tests alone passed a PR that broke one.)
 - A docs PR gets a claim lane. It checks each changed sentence against the code, with file:line. Only lanes the root briefs count. A helper that the owner briefed is not independent.
