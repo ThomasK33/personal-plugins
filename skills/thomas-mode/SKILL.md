@@ -13,7 +13,8 @@ When you load this skill only for its Amendments (a pstack or egm step that runs
 2. Run `scripts/check-drift.sh` and keep its report. The report does not survive a context rollover, so run the script again after one. On exit 1, act on a reported file only when the task reaches it. A full `/thomas-mode` run reaches `docs/harness/claude-code.md` (step 1) and `skills/poteto-mode/SKILL.md` (step 3) at the start. It reaches any other file when it enters a step in that file, such as a playbook that poteto-mode routes to. Do not read or mention drift in a file the task never reaches. (A chat that never used `egm-draft` still listed its drift as a thing to know.) A skill edit reviews it per "Changing this skill". Do not stop. On exit 2, report the error and continue without the check. Handle each report line this way:
    - `CHANGED`: read the diff for that file only (`--diff=<path>`, redirected to a file). Before you follow an amended step, tell the user what changed in it. `skills/poteto-mode/SKILL.md` and `skills/setup-pstack/SKILL.md` have no amended step: follow the installed file, and tell the user only when the change conflicts with a rule here.
    - `ADDED`: read the whole file. Before you follow an amended step in it, tell the user what it says, the same as for `CHANGED`.
-   - `ANCHOR` or `MISSING`: the plugin dropped a step or file that this skill names. Tell the user, and treat a rule anchored there as stale per the Amendments intro.
+   - `ANCHOR`: the plugin dropped a step that this skill names. Treat a rule anchored there as stale per the Amendments intro.
+   - `MISSING`: the installed plugin lacks a file that this skill names. Report it as a setup error, as on exit 2. Do not treat a rule as stale on `MISSING` alone.
    - `NOPIN`: it names a plugin, not a file. Report it as a setup error, as on exit 2, whatever the task reaches.
 3. Load `pstack:poteto-mode` with `agent_skill_read` and follow it, with the rules below.
 

@@ -1,10 +1,10 @@
 #!/usr/bin/env bash
 # Reports upstream plugin changes to the files thomas-mode amends or depends on.
-# Usage: check-drift.sh [--diff | --diff=<path>] [--accept]
+# Usage: check-drift.sh [--diff | --diff=<path> | --accept]
 #   --diff         print the upstream diff for each changed file
 #   --diff=<path>  print the upstream diff for one watched file only, such as skills/egm-draft/SKILL.md
 #   --accept       after you reviewed the drift, pin the installed plugin commits in PINNED.
-#                  Run it in your personal-plugins clone and commit PINNED.
+#                  Run it in your personal-plugins clone and commit PINNED. It cannot be combined with --diff.
 # Exit 0: no drift. Exit 1: drift (see output). Exit 2: usage, setup, or network error.
 set -euo pipefail
 trap 'echo "ERR line $LINENO" >&2; exit 2' ERR
@@ -18,9 +18,10 @@ for a in "$@"; do
     --diff) SHOW_DIFF=1 ;;
     --diff=?*) SHOW_DIFF=1; DIFF_PATH="${a#--diff=}" ;;
     --accept) ACCEPT=1 ;;
-    *) echo "usage: $0 [--diff | --diff=<path>] [--accept]" >&2; exit 2 ;;
+    *) echo "usage: $0 [--diff | --diff=<path> | --accept]" >&2; exit 2 ;;
   esac
 done
+if [ "$ACCEPT" = 1 ] && [ "$SHOW_DIFF" = 1 ]; then echo "ERR --accept cannot be combined with --diff" >&2; exit 2; fi
 [ -f "$REGISTRY" ] || { echo "ERR no $REGISTRY" >&2; exit 2; }
 [ -f "$PINS" ] || { echo "ERR no $PINS" >&2; exit 2; }
 
