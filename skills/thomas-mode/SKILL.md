@@ -10,7 +10,7 @@ Paths are relative to this skill's directory (`skillDir` in the `agent_skill_rea
 When you load this skill only for its Amendments (a pstack or egm step that runs without `/thomas-mode`), skip steps 1 and 3 below. Still run step 2, then apply only the "Amendments to plugin steps" rules for the steps you run.
 
 1. Load the `pstack-in-xum` skill from the `fux-plugins` plugin. It maps pstack's Cursor names to Xum. When `scripts/check-drift.sh` reports a change to pstack's `docs/harness/claude-code.md`, check whether `pstack-in-xum` needs a new row.
-2. Run `scripts/check-drift.sh`. On exit 1, look only at the reported files this task uses. A full `/thomas-mode` run always uses `docs/harness/claude-code.md` (step 1) and `skills/poteto-mode/SKILL.md` (step 3). Read their diff (`--diff`, redirected to a file). Before you follow an amended step, tell the user what changed in it. Ignore drift in a file this task does not use: do not read it, and do not mention it in a reply. A skill edit reviews it per "Changing this skill". Do not stop. On exit 2, report the error and continue without the check. (A chat that never used `egm-draft` still listed its drift as a thing to know.)
+2. Run `scripts/check-drift.sh` and keep its report. On exit 1, act on a reported file only when the task reaches it. A full `/thomas-mode` run reaches `docs/harness/claude-code.md` (step 1) and `skills/poteto-mode/SKILL.md` (step 3) at the start. It reaches any other file when it enters a step in that file, such as a playbook that poteto-mode routes to. Then read that file's diff (`--diff`, redirected to a file), and before you follow an amended step, tell the user what changed in it. Do not read or mention drift in a file the task never reaches. A skill edit reviews it per "Changing this skill". Do not stop. On exit 2, report the error and continue without the check. (A chat that never used `egm-draft` still listed its drift as a thing to know.)
 3. Load `pstack:poteto-mode` with `agent_skill_read` and follow it, with the rules below.
 
 Precedence: `~/.xum/AGENTS.md`, then his memory (`/memories/global/user-workflow-preferences.md`, read it with the `memory` tool at task start and after every context rollover), then this skill, then poteto-mode and its playbooks. This skill does not repeat AGENTS.md or memory.
@@ -49,7 +49,7 @@ His ship prompt is the definition of done:
 
 ## Amendments to plugin steps
 
-Each rule names the plugin step it changes as `[<plugin> <path> § <step title>]`. `scripts/check-drift.sh` checks that each title still exists. When the installed plugin commit differs from `PINNED`, it fetches the pinned upstream files and diffs them against the installed ones. A rule is stale when its step no longer exists or the plugin now says the same thing. Then follow the plugin, delete the rule, and tell the user. After you review a drift report, run `scripts/check-drift.sh --accept` in a clone of `ThomasK33/personal-plugins` and commit `PINNED`.
+Each rule names the plugin step it changes as `[<plugin> <path> § <step title>]`. `scripts/check-drift.sh` checks that each title still exists. When the installed plugin commit differs from `PINNED`, it fetches the pinned upstream files and diffs them against the installed ones. A rule is stale when its step no longer exists or the plugin now says the same thing. Then follow the plugin, delete the rule, and tell the user. Accept drift only in a skill edit, as "Changing this skill" describes.
 
 ### Autopilot
 
