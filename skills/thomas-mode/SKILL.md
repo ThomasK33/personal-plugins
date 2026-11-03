@@ -71,6 +71,7 @@ Each rule names the plugin step it changes as `[<plugin> <path> § <step title>]
 - In a loop whose verifiers file follow-ups, "a problem the PR's base already has" means the commit where the loop started, not current trunk. A regression the loop introduced is always loop work. Of the problems that were already there at loop start, only a bug a user hits in normal use becomes loop work. The rest goes to one parking issue that the loop does not work. (Nine follow-up issues ran back to back, and an overwrite that one PR introduced was later called a known gap on main.)
 - Add a spec lane. It checks the diff against each numbered decision of the governing spec or RFC. (Behavior tests alone passed a PR that broke one.)
 - A docs PR gets a claim lane. It checks each changed sentence against the code, with file:line. Only lanes the root briefs count. A helper that the owner briefed is not independent.
+- A docs PR that tells readers to run commands also gets an execution lane, before its Codex loop: a fresh agent follows the doc on a clone of a real target repository. (An adoption page passed 3 Codex rounds. Then a dry run on coder/xum found 10 gaps, one of them a copy command that deleted the repository's own hook.)
 - An evidence script prints one short line per result and ends with a count line. A receipt without its count line is unchecked. (The bash tool dropped an over-long line, and 111 failures read as a pass. Tool request: coder/xum#7876.)
 
 [pstack skills/poteto-mode/playbooks/autopilot-full.md § Run the root layer]
@@ -115,6 +116,21 @@ Each rule names the plugin step it changes as `[<plugin> <path> § <step title>]
 [pstack skills/show-me-your-work/SKILL.md § Cross-model review of the trail]
 
 - In a loop that does not hand back, run this review at each round boundary (each closed follow-up issue), not only before handing back. Give the reviewer the Xum transcript paths (`~/.xum/sessions/<ws>/chat.jsonl` and `chat-archive.jsonl`) or a digest, as in the Reflect amendment. (Five under-verified merges landed in a 24-hour gap between reviews.)
+- In a one-shot campaign, run this review before the last merges and before any closing comment. A closing comment states only what is true on main. (An audit after most merges found a miscount and a contradicted decision already on main, and closing drafts that called items fixed by a PR that was still open.)
+
+[pstack skills/show-me-your-work/SKILL.md § Rules]
+
+- Before you `task_remove` a child, grep the trail for its workspace ID, and copy every cited file into the parent's trail folder. Removal deletes the child's scratch folder. (A measurement child's replay summary was lost, and an audit still cited its scratch path.)
+
+### Figure it out
+
+[pstack skills/figure-it-out/SKILL.md § Phase A: Frame]
+
+- When the scope is an inventory of issue items, one cross-model agent checks the inventory against the raw issue threads before the lanes start. (An inventory missed 3 items, and the gaps reached builders and closing comments.)
+
+[pstack skills/figure-it-out/SKILL.md § Phase B: Design the workflow]
+
+- Each worker that builds also gets its own build-output folder, such as `CARGO_TARGET_DIR`, and deletes it in its final task. (Builders kept one Cargo target folder per variant, about 90 GB across 4 lanes, while the home folder was over its limit.)
 
 ### Reflect
 
