@@ -2,7 +2,8 @@
 # Reports upstream plugin changes to the files thomas-mode amends or depends on.
 # Usage: check-drift.sh [--diff | --diff=<path> | --accept]
 #   --diff         print the upstream diff for each changed file
-#   --diff=<path>  print the upstream diff for one watched file only, such as skills/egm-draft/SKILL.md
+#   --diff=<path>  print the upstream diff for one watched file only, such as skills/egm-draft/SKILL.md.
+#                  One leading ./ is ignored. Give it once, without --diff. A path that more than one plugin watches is an error.
 #   --accept       after you reviewed the drift, pin the installed plugin commits in PINNED.
 #                  Run it in your personal-plugins clone and commit PINNED. It cannot be combined with --diff.
 # Exit 0: no drift. Exit 1: drift (see output). Exit 2: usage, setup, or network error.
@@ -12,15 +13,19 @@ HERE="$(cd "$(dirname "$0")/.." && pwd)"
 PLUGINS="$HOME/.mux/plugins"
 REGISTRY="$HOME/.mux/plugins.json"
 PINS="$HERE/PINNED"
-SHOW_DIFF=0 ACCEPT=0 DIFF_PATH=""
+SHOW_DIFF=0 ACCEPT=0 DIFF_ALL=0 DIFF_PATH=""
 for a in "$@"; do
   case "$a" in
-    --diff) SHOW_DIFF=1 ;;
-    --diff=?*) SHOW_DIFF=1; DIFF_PATH="${a#--diff=}" ;;
+    --diff) SHOW_DIFF=1; DIFF_ALL=1 ;;
+    --diff=?*)
+      [ -z "$DIFF_PATH" ] || { echo "ERR --diff=<path> given more than once" >&2; exit 2; }
+      SHOW_DIFF=1; DIFF_PATH="${a#--diff=}"; DIFF_PATH="${DIFF_PATH#./}"
+      [ -n "$DIFF_PATH" ] || { echo "usage: $0 [--diff | --diff=<path> | --accept]" >&2; exit 2; } ;;
     --accept) ACCEPT=1 ;;
     *) echo "usage: $0 [--diff | --diff=<path> | --accept]" >&2; exit 2 ;;
   esac
 done
+if [ "$DIFF_ALL" = 1 ] && [ -n "$DIFF_PATH" ]; then echo "ERR --diff cannot be combined with --diff=<path>" >&2; exit 2; fi
 if [ "$ACCEPT" = 1 ] && [ "$SHOW_DIFF" = 1 ]; then echo "ERR --accept cannot be combined with --diff" >&2; exit 2; fi
 [ -f "$REGISTRY" ] || { echo "ERR no $REGISTRY" >&2; exit 2; }
 [ -f "$PINS" ] || { echo "ERR no $PINS" >&2; exit 2; }
@@ -37,8 +42,10 @@ egm docs/claude.md
 egm docs/codex.md"
 FILES="$( { printf '%s\n' "$ANCHORS" | sed -E 's/^\[([^ ]+) ([^ ]+) § .*/\1 \2/'; printf '%s\n' "$WATCH"; } | sort -u)"
 PLUGIN_SET="$(printf '%s\n' "$FILES" | cut -d' ' -f1 | sort -u)"
-if [ -n "$DIFF_PATH" ] && ! printf '%s\n' "$FILES" | awk -v p="$DIFF_PATH" '$2==p {f=1} END {exit !f}'; then
-  echo "ERR $DIFF_PATH is not a watched file" >&2; exit 2
+if [ -n "$DIFF_PATH" ]; then
+  owners="$(printf '%s\n' "$FILES" | awk -v p="$DIFF_PATH" '$2==p {print $1}' | sort -u)"
+  [ -n "$owners" ] || { echo "ERR $DIFF_PATH is not a watched file" >&2; exit 2; }
+  case "$owners" in *$'\n'*) echo "ERR ambiguous path $DIFF_PATH: watched in plugins $(printf '%s\n' "$owners" | paste -sd' ' -)" >&2; exit 2 ;; esac
 fi
 
 # Prints: <lockedSha> <owner/repo> <subpath or .>
@@ -69,7 +76,7 @@ if [ "$ACCEPT" = 1 ]; then
   mv "$tmp" "$PINS"; echo "pinned:"; cat "$PINS"; exit 0
 fi
 
-drift=$missing checked=0 cache="$(mktemp -d)"
+drift=$missing checked=0 nopin=" " cache="$(mktemp -d)"
 trap 'rm -rf "$cache"' EXIT
 while read -r plugin path; do
   checked=$((checked+1))
@@ -77,7 +84,10 @@ while read -r plugin path; do
   read -r sha repo sub <<< "$(installed "$plugin")"
   [ -n "${sha:-}" ] || { echo "ERR plugin $plugin not in $REGISTRY" >&2; exit 2; }
   pin="$(pinned "$plugin")"
-  [ -n "$pin" ] || { echo "NOPIN   $plugin (run --accept once)"; drift=1; continue; }
+  if [ -z "$pin" ]; then
+    case "$nopin" in *" $plugin "*) ;; *) echo "NOPIN   $plugin (run --accept once)"; nopin="$nopin$plugin " ;; esac
+    drift=1; continue
+  fi
   [ "$sha" = "$pin" ] && continue
   base="$cache/$plugin/$path"; mkdir -p "$(dirname "$base")"
   url="https://raw.githubusercontent.com/$repo/$pin/${sub#./}/$path"; url="${url/\/.\//\/}"
