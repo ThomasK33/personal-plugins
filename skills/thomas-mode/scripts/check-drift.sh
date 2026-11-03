@@ -31,7 +31,10 @@ ANCHORS="$(grep -oP '\[[a-z0-9-]+ [^ \]]+ § [^\]]+\]' "$HERE/SKILL.md" | sort -
 # Files thomas-mode depends on without an anchor.
 WATCH="pstack docs/harness/claude-code.md
 pstack skills/poteto-mode/SKILL.md
-pstack skills/setup-pstack/SKILL.md"
+pstack skills/setup-pstack/SKILL.md
+egm docs/harnesses.md
+egm docs/claude.md
+egm docs/codex.md"
 FILES="$( { printf '%s\n' "$ANCHORS" | sed -E 's/^\[([^ ]+) ([^ ]+) § .*/\1 \2/'; printf '%s\n' "$WATCH"; } | sort -u)"
 PLUGIN_SET="$(printf '%s\n' "$FILES" | cut -d' ' -f1 | sort -u)"
 if [ -n "$DIFF_PATH" ] && ! printf '%s\n' "$FILES" | awk -v p="$DIFF_PATH" '$2==p {f=1} END {exit !f}'; then
