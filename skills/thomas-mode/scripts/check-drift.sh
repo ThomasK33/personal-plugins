@@ -3,7 +3,7 @@
 # Usage: check-drift.sh [--diff | --diff=<path> | --accept]
 #   --diff         print the upstream diff for each changed file
 #   --diff=<path>  print the upstream diff for one watched file only, such as skills/egm-draft/SKILL.md.
-#                  One leading ./ is ignored. Give it once. A path that more than one plugin watches is an error.
+#                  One leading ./ is ignored. Give it once, without --diff. A path that more than one plugin watches is an error.
 #   --accept       after you reviewed the drift, pin the installed plugin commits in PINNED.
 #                  Run it in your personal-plugins clone and commit PINNED. It cannot be combined with --diff.
 # Exit 0: no drift. Exit 1: drift (see output). Exit 2: usage, setup, or network error.
@@ -13,10 +13,10 @@ HERE="$(cd "$(dirname "$0")/.." && pwd)"
 PLUGINS="$HOME/.mux/plugins"
 REGISTRY="$HOME/.mux/plugins.json"
 PINS="$HERE/PINNED"
-SHOW_DIFF=0 ACCEPT=0 DIFF_PATH=""
+SHOW_DIFF=0 ACCEPT=0 DIFF_ALL=0 DIFF_PATH=""
 for a in "$@"; do
   case "$a" in
-    --diff) SHOW_DIFF=1 ;;
+    --diff) SHOW_DIFF=1; DIFF_ALL=1 ;;
     --diff=?*)
       [ -z "$DIFF_PATH" ] || { echo "ERR --diff=<path> given more than once" >&2; exit 2; }
       SHOW_DIFF=1; DIFF_PATH="${a#--diff=}"; DIFF_PATH="${DIFF_PATH#./}"
@@ -25,6 +25,7 @@ for a in "$@"; do
     *) echo "usage: $0 [--diff | --diff=<path> | --accept]" >&2; exit 2 ;;
   esac
 done
+if [ "$DIFF_ALL" = 1 ] && [ -n "$DIFF_PATH" ]; then echo "ERR --diff cannot be combined with --diff=<path>" >&2; exit 2; fi
 if [ "$ACCEPT" = 1 ] && [ "$SHOW_DIFF" = 1 ]; then echo "ERR --accept cannot be combined with --diff" >&2; exit 2; fi
 [ -f "$REGISTRY" ] || { echo "ERR no $REGISTRY" >&2; exit 2; }
 [ -f "$PINS" ] || { echo "ERR no $PINS" >&2; exit 2; }
