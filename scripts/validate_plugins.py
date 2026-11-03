@@ -54,7 +54,9 @@ def split_frontmatter(text):
     """Split SKILL.md text the way Xum's parseSkillMarkdown does.
 
     Returns (yaml_text, body_lines, body_start_line). yaml_text is None when Xum would
-    reject the file for missing or unclosed frontmatter; body_lines is then every line.
+    reject the file for missing, malformed-start (such as `----` or `--- x`), or unclosed
+    frontmatter. body_lines is then every line. For a file with only frontmatter,
+    body_start_line points one line past the end of the file, and no message uses it then.
     Line numbers count lines after Xum's newline normalization, so they are file lines.
     """
     text = text.removeprefix("\ufeff").replace("\r\n", "\n").replace("\r", "\n")
