@@ -8,18 +8,21 @@ import os
 import re
 from pathlib import Path
 from urllib.parse import unquote, urlsplit
-from urllib.request import urlopen
 
 import yaml
 from jsonschema import Draft202012Validator
 
 
-SCHEMA_URL = "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json"
+# Committed copy of https://agent-plugins.org/schemas/1.0.0/plugin.schema.json, so checks need no network.
+# To refresh it, download that URL over this file, inspect the upstream change, then update SCHEMA_SHA256.
+SCHEMA_PATH = Path(__file__).with_name("plugin.schema.json")
 SCHEMA_SHA256 = "0a4aad95ce337878ad38802ebf0daa3fde76abe3f65400c86bcbb1ec0b3ab883"
 SKILL_NAME = re.compile(r"[a-z0-9]+(?:-[a-z0-9]+)*")
 LOCAL_LINK = re.compile(r"\[[^\]]*\]\(([^)]+)\)")
 # Matches Xum's SKILL_ARGUMENT_PLACEHOLDER_RE. JavaScript \b is ASCII-only, hence re.ASCII.
 ARGUMENT_PLACEHOLDER = re.compile(r"\$(ARGUMENTS\b|[1-9])", re.ASCII)
+# The characters JavaScript's String.prototype.trim removes; Python's str.strip set differs.
+JS_WHITESPACE = "\t\n\v\f\r \u00a0\u1680\u2000\u2001\u2002\u2003\u2004\u2005\u2006\u2007\u2008\u2009\u200a\u2028\u2029\u202f\u205f\u3000\ufeff"
 
 
 def require(condition, message):
@@ -47,9 +50,26 @@ def check_links(document, root):
         require(resolved.exists(), f"Missing reference in {document}: {target}")
 
 
+def split_frontmatter(text):
+    """Split SKILL.md text the way Xum's parseSkillMarkdown does.
+
+    Returns (yaml_text, body_lines, body_start_line). yaml_text is None when Xum would
+    reject the file for missing or unclosed frontmatter; body_lines is then every line.
+    Line numbers count lines after Xum's newline normalization, so they are file lines.
+    """
+    text = text.removeprefix("\ufeff").replace("\r\n", "\n").replace("\r", "\n")
+    lines = text.split("\n")
+    if text.startswith("---") and lines[0].strip(JS_WHITESPACE) == "---":
+        end = next((i for i in range(1, len(lines)) if lines[i].strip(JS_WHITESPACE) == "---"), None)
+        if end is not None:
+            return "\n".join(lines[1:end]), lines[end + 1:], end + 2
+    return None, lines, 1
+
+
 def check_placeholders(document):
     # Xum replaces $ARGUMENTS and $1 to $9 anywhere in a skill body, code blocks included.
-    for number, line in enumerate(document.read_text(encoding="utf-8").splitlines(), 1):
+    _, lines, start = split_frontmatter(document.read_text(encoding="utf-8"))
+    for number, line in enumerate(lines, start):
         require(not ARGUMENT_PLACEHOLDER.search(line),
                 f"Argument placeholder in {document}:{number}: Xum replaces $ARGUMENTS and $1 to $9 with invocation arguments")
 
@@ -58,9 +78,9 @@ def check_skill(skill, plugin):
     entry = skill / "SKILL.md"
     require(entry.is_file(), f"Missing skill entry: {entry}")
     text = entry.read_text(encoding="utf-8")
-    match = re.match(r"\A---\r?\n(.*?)\r?\n---(?:\r?\n|\Z)", text, re.S)
-    require(match is not None, f"Missing YAML frontmatter: {entry}")
-    data = yaml.safe_load(match.group(1))
+    frontmatter, body, _ = split_frontmatter(text)
+    require(frontmatter is not None, f"Missing YAML frontmatter: {entry}")
+    data = yaml.safe_load(frontmatter)
     require(isinstance(data, dict), f"Frontmatter must be a mapping: {entry}")
     allowed = {"name", "description", "license", "compatibility", "metadata", "allowed-tools"}
     require(not set(data) - allowed, f"Unknown frontmatter fields: {entry}")
@@ -79,7 +99,7 @@ def check_skill(skill, plugin):
         require(isinstance(data["metadata"], dict) and all(
             isinstance(k, str) and isinstance(v, str) for k, v in data["metadata"].items()
         ), f"Metadata must map strings to strings: {entry}")
-    require(text[match.end():].strip(), f"Empty skill body: {entry}")
+    require("\n".join(body).strip(), f"Empty skill body: {entry}")
     for document in skill.rglob("*.md"):
         check_links(document, plugin)
     for document in skill.rglob("SKILL.md"):
@@ -117,13 +137,10 @@ def check_plugin(plugin, schema):
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--schema", type=Path, help="Use a local copy of the pinned official schema")
+    parser.add_argument("--schema", type=Path, default=SCHEMA_PATH,
+                        help="Use another copy of the pinned official schema (default: %(default)s)")
     args = parser.parse_args()
-    if args.schema:
-        raw = args.schema.read_bytes()
-    else:
-        with urlopen(SCHEMA_URL, timeout=30) as response:
-            raw = response.read()
+    raw = args.schema.read_bytes()
     require(hashlib.sha256(raw).hexdigest() == SCHEMA_SHA256,
             "Official schema digest changed; inspect the upstream change before updating the pin.")
     schema = json.loads(raw)
