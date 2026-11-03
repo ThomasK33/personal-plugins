@@ -8,13 +8,14 @@ import os
 import re
 from pathlib import Path
 from urllib.parse import unquote, urlsplit
-from urllib.request import urlopen
 
 import yaml
 from jsonschema import Draft202012Validator
 
 
-SCHEMA_URL = "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json"
+# Committed copy of https://agent-plugins.org/schemas/1.0.0/plugin.schema.json, so checks need no network.
+# To refresh it, download that URL over this file, inspect the upstream change, then update SCHEMA_SHA256.
+SCHEMA_PATH = Path(__file__).with_name("plugin.schema.json")
 SCHEMA_SHA256 = "0a4aad95ce337878ad38802ebf0daa3fde76abe3f65400c86bcbb1ec0b3ab883"
 SKILL_NAME = re.compile(r"[a-z0-9]+(?:-[a-z0-9]+)*")
 LOCAL_LINK = re.compile(r"\[[^\]]*\]\(([^)]+)\)")
@@ -49,7 +50,12 @@ def check_links(document, root):
 
 def check_placeholders(document):
     # Xum replaces $ARGUMENTS and $1 to $9 anywhere in a skill body, code blocks included.
-    for number, line in enumerate(document.read_text(encoding="utf-8").splitlines(), 1):
+    # Like Xum's parseSkillMarkdown, the body starts after the first later line that is "---".
+    lines = document.read_text(encoding="utf-8").splitlines()
+    start = 0
+    if lines and lines[0].strip() == "---":
+        start = next((i + 1 for i in range(1, len(lines)) if lines[i].strip() == "---"), 0)
+    for number, line in enumerate(lines[start:], start + 1):
         require(not ARGUMENT_PLACEHOLDER.search(line),
                 f"Argument placeholder in {document}:{number}: Xum replaces $ARGUMENTS and $1 to $9 with invocation arguments")
 
@@ -117,13 +123,10 @@ def check_plugin(plugin, schema):
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--schema", type=Path, help="Use a local copy of the pinned official schema")
+    parser.add_argument("--schema", type=Path, default=SCHEMA_PATH,
+                        help="Use another copy of the pinned official schema (default: %(default)s)")
     args = parser.parse_args()
-    if args.schema:
-        raw = args.schema.read_bytes()
-    else:
-        with urlopen(SCHEMA_URL, timeout=30) as response:
-            raw = response.read()
+    raw = args.schema.read_bytes()
     require(hashlib.sha256(raw).hexdigest() == SCHEMA_SHA256,
             "Official schema digest changed; inspect the upstream change before updating the pin.")
     schema = json.loads(raw)
