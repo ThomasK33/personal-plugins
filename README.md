@@ -64,7 +64,7 @@ python3 -m venv .venv
 .venv/bin/python scripts/validate_plugins.py
 ```
 
-Validation requires a manifest at the repository root, validates it against the official versioned JSON Schema, checks skill frontmatter, argument placeholders such as `$1` in `SKILL.md` files, and package containment, and verifies local Markdown references. It downloads the schema from its canonical HTTPS URL and verifies a pinned SHA-256 digest. To validate offline after installing the dependencies, pass a previously downloaded copy with `--schema /path/to/plugin.schema.json`.
+Validation requires a manifest at the repository root, validates it against the official versioned JSON Schema, checks skill frontmatter, argument placeholders (`$ARGUMENTS` and `$1` to `$9`) in `SKILL.md` files, and package containment, and verifies local Markdown references. It downloads the schema from its canonical HTTPS URL and verifies a pinned SHA-256 digest. To validate offline after installing the dependencies, pass a previously downloaded copy with `--schema /path/to/plugin.schema.json`.
 
 These are packaging checks. They do not establish that the instructions improve agent behavior or that every client has been tested. GitHub Actions runs the same checks on pushes and pull requests.
 

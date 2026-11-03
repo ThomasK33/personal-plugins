@@ -18,7 +18,8 @@ SCHEMA_URL = "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json"
 SCHEMA_SHA256 = "0a4aad95ce337878ad38802ebf0daa3fde76abe3f65400c86bcbb1ec0b3ab883"
 SKILL_NAME = re.compile(r"[a-z0-9]+(?:-[a-z0-9]+)*")
 LOCAL_LINK = re.compile(r"\[[^\]]*\]\(([^)]+)\)")
-ARGUMENT_PLACEHOLDER = re.compile(r"\$\d")
+# Matches Xum's SKILL_ARGUMENT_PLACEHOLDER_RE. JavaScript \b is ASCII-only, hence re.ASCII.
+ARGUMENT_PLACEHOLDER = re.compile(r"\$(ARGUMENTS\b|[1-9])", re.ASCII)
 
 
 def require(condition, message):
@@ -47,10 +48,10 @@ def check_links(document, root):
 
 
 def check_placeholders(document):
-    # Xum replaces $1, $2, ... in a skill body with the invocation's argument words.
+    # Xum replaces $ARGUMENTS and $1 to $9 anywhere in a skill body, code blocks included.
     for number, line in enumerate(document.read_text(encoding="utf-8").splitlines(), 1):
         require(not ARGUMENT_PLACEHOLDER.search(line),
-                f"Argument placeholder in {document}:{number}: Xum replaces $ plus a digit with an argument word")
+                f"Argument placeholder in {document}:{number}: Xum replaces $ARGUMENTS and $1 to $9 with invocation arguments")
 
 
 def check_skill(skill, plugin):
