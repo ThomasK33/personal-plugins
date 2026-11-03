@@ -40,7 +40,7 @@ His ship prompt is the definition of done:
 - **Merge is your job** once he asked for it. Never end with "PR is open, do you want me to merge?". `--admin` needs his explicit word in this chat. A bypass list is not that word.
 - **Pixel does not block.** Ignore the `Pixel / Review` status.
 - **A silent Codex blocks.** Re-request the review once after about an hour. If Codex is still silent, report it and ask. Merge without a Codex verdict only on his word for that PR.
-- **Fix now.** Fix a concrete defect in or next to the work in this branch, or in a sub-agent PR that you drive to merged. Do not offer to file an issue. Defer only scope creep, as defined in memory ("a fix bigger than the original change"). A known gap that a PR documents instead of fixing is a deferral: open its tracking issue before the merge, and link it from one contract line instead of listing its conditions. (A data-loss gap lived only in closed issues and a 7,954-character README bullet until a trail review flagged it.)
+- **Fix now.** Fix a concrete defect in or next to the work in this branch, or in a sub-agent PR that you drive to merged. Do not offer to file an issue. Defer only scope creep, as defined in memory ("a fix bigger than the original change"). For a finding from a verifier, an advisor or Codex, the loop rule under "Swarm-verify once" wins: ship its fix in a follow-up PR in the same run, and open no issue. A known gap that a PR documents instead of fixing is a deferral: open its tracking issue before the merge, and link it from one contract line instead of listing its conditions. (A data-loss gap lived only in closed issues and a 7,954-character README bullet until a trail review flagged it.)
 
 ## Doing the work
 
