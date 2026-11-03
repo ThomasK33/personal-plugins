@@ -82,14 +82,14 @@ Each rule names the plugin step it changes as `[<plugin> <path> § <step title>]
 
 [pstack skills/poteto-mode/playbooks/autopilot-full.md § Run the root layer]
 
-- By the fourth review round with findings in one area, counted across every PR and follow-up PR that reopens that area, stop asking for a waiver per round. Ask the operator one question whose options include narrowing the scope or redesigning that area. When you close an area, write the banned premise (such as "no proxy for editor state that has no API") into the repo's AGENTS.md in the PR that closes the area, and into every later brief for that area. (openFile's reload code took about 19 Codex rounds over six PRs, and the owner after a "stop adding mechanism" decision added a proxy that regressed.)
+- By the fourth review round with findings in one area, counted across every PR and follow-up PR that reopens that area, stop asking for a waiver per round. Ask the operator one question whose options include narrowing the scope or redesigning that area. When you close an area, write the banned premise (such as "no proxy for editor state that has no API") into the repo's AGENTS.md in the PR that closes the area (create it if absent), and into every later brief for that area. In a repo you do not own, put it in the closing PR body and every later brief. (openFile's reload code took about 19 Codex rounds over six PRs, and the owner after a "stop adding mechanism" decision added a proxy that regressed.)
 - At every round boundary and after every context rollover, read his memory and the playbook again. Check the checkpoint's flow against the playbook step by step, copy the per-round rules (status page, spend from `session-usage.json`, trunk CI) into the checkpoint, and rebuild the owner and verifier briefs from the trail. (A 30-hour loop followed its own checkpoint flow, which ran the verifier after the Codex rounds, and it published no status page and no spend.)
 - Decide when to stop by the severity of new findings, not by the round count. On security and trust code, do not stop early: late rounds kept finding real P1s. Rounds past six still need his waiver.
 - When the same gate false positive blocks a second PR, fix the gate in its own PR. Do not approve the bypass again.
 
-[pstack skills/poteto-mode/playbooks/autopilot-full.md § Reply]
+[pstack skills/poteto-mode/playbooks/autopilot-full.md § **Reply:**]
 
-- The reply lists follow-up PRs with their state. It never lists parked follow-ups: the loop rule under "Swarm-verify once" leaves none. (Issue #15 parked 9 valid leftovers.)
+- The reply lists follow-up PRs with their state, and links the tracking issue of each gap he agreed to defer as scope creep. It lists no other parked follow-ups. (Issue #15 parked 9 valid leftovers.)
 
 ### Babysit
 
@@ -103,7 +103,7 @@ Each rule names the plugin step it changes as `[<plugin> <path> § <step title>]
 
 [pstack skills/poteto-mode/references/bugbot-triage.md § Owner-declared follow-up or deferred cleanup]
 
-- Only his word counts as the owner's declaration. A sub-agent owner cannot declare a follow-up to skip a finding. (Issue #15 parked 9 valid leftovers.)
+- Only his word counts as the owner's declaration. A sub-agent owner cannot declare a follow-up to skip a finding. Then the finding is a follow-up PR in this run, unless he agreed to defer it as scope creep. (Issue #15 parked 9 valid leftovers.)
 
 ### Shipping
 
