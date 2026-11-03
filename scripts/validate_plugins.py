@@ -18,6 +18,7 @@ SCHEMA_URL = "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json"
 SCHEMA_SHA256 = "0a4aad95ce337878ad38802ebf0daa3fde76abe3f65400c86bcbb1ec0b3ab883"
 SKILL_NAME = re.compile(r"[a-z0-9]+(?:-[a-z0-9]+)*")
 LOCAL_LINK = re.compile(r"\[[^\]]*\]\(([^)]+)\)")
+ARGUMENT_PLACEHOLDER = re.compile(r"\$\d")
 
 
 def require(condition, message):
@@ -43,6 +44,13 @@ def check_links(document, root):
         resolved = document.parent / relative
         inside(resolved, root)
         require(resolved.exists(), f"Missing reference in {document}: {target}")
+
+
+def check_placeholders(document):
+    # Xum replaces $1, $2, ... in a skill body with the invocation's argument words.
+    for number, line in enumerate(document.read_text(encoding="utf-8").splitlines(), 1):
+        require(not ARGUMENT_PLACEHOLDER.search(line),
+                f"Argument placeholder in {document}:{number}: Xum replaces $ plus a digit with an argument word")
 
 
 def check_skill(skill, plugin):
@@ -73,6 +81,8 @@ def check_skill(skill, plugin):
     require(text[match.end():].strip(), f"Empty skill body: {entry}")
     for document in skill.rglob("*.md"):
         check_links(document, plugin)
+    for document in skill.rglob("SKILL.md"):
+        check_placeholders(document)
 
 
 def check_plugin(plugin, schema):
@@ -101,7 +111,7 @@ def check_plugin(plugin, schema):
     require(entries, f"No skills found: {plugin}")
     for skill in entries:
         check_skill(skill, plugin)
-    print(f"Validated {data['name']}: root manifest, {len(entries)} skill(s), containment, references")
+    print(f"Validated {data['name']}: root manifest, {len(entries)} skill(s), containment, references, placeholders")
 
 
 def main():
