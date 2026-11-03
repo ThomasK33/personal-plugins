@@ -1,7 +1,8 @@
 #!/usr/bin/env bash
 # Reports upstream plugin changes to the files thomas-mode amends or depends on.
-# Usage: check-drift.sh [--diff] [--accept]
-#   --diff    print the upstream diff for each changed file
+# Usage: check-drift.sh [--diff | --diff=<path>] [--accept]
+#   --diff         print the upstream diff for each changed file
+#   --diff=<path>  print the upstream diff for one watched file only, such as skills/egm-draft/SKILL.md
 #   --accept  after you reviewed the drift, pin the installed plugin commits in PINNED.
 #             Run it in your personal-plugins clone and commit PINNED.
 # Exit 0: no drift. Exit 1: drift (see output). Exit 2: usage, setup, or network error.
@@ -11,12 +12,13 @@ HERE="$(cd "$(dirname "$0")/.." && pwd)"
 PLUGINS="$HOME/.mux/plugins"
 REGISTRY="$HOME/.mux/plugins.json"
 PINS="$HERE/PINNED"
-SHOW_DIFF=0 ACCEPT=0
+SHOW_DIFF=0 ACCEPT=0 DIFF_PATH=""
 for a in "$@"; do
   case "$a" in
     --diff) SHOW_DIFF=1 ;;
+    --diff=?*) SHOW_DIFF=1; DIFF_PATH="${a#--diff=}" ;;
     --accept) ACCEPT=1 ;;
-    *) echo "usage: $0 [--diff] [--accept]" >&2; exit 2 ;;
+    *) echo "usage: $0 [--diff | --diff=<path>] [--accept]" >&2; exit 2 ;;
   esac
 done
 [ -f "$REGISTRY" ] || { echo "ERR no $REGISTRY" >&2; exit 2; }
@@ -31,6 +33,9 @@ pstack skills/poteto-mode/SKILL.md
 pstack skills/setup-pstack/SKILL.md"
 FILES="$( { printf '%s\n' "$ANCHORS" | sed -E 's/^\[([^ ]+) ([^ ]+) § .*/\1 \2/'; printf '%s\n' "$WATCH"; } | sort -u)"
 PLUGIN_SET="$(printf '%s\n' "$FILES" | cut -d' ' -f1 | sort -u)"
+if [ -n "$DIFF_PATH" ] && ! printf '%s\n' "$FILES" | awk -v p="$DIFF_PATH" '$2==p {f=1} END {exit !f}'; then
+  echo "ERR $DIFF_PATH is not a watched file" >&2; exit 2
+fi
 
 # Prints: <lockedSha> <owner/repo> <subpath or .>
 installed() { python3 - "$REGISTRY" "$1" <<'PY'
@@ -82,7 +87,7 @@ while read -r plugin path; do
   if ! cmp -s "$base" "$cur"; then
     n="$(diff "$base" "$cur" | grep -c '^[<>]' || true)"
     echo "CHANGED $plugin $path ($n lines since ${pin:0:7})"; drift=1
-    if [ "$SHOW_DIFF" = 1 ]; then diff -u "$base" "$cur" || true; fi
+    if [ "$SHOW_DIFF" = 1 ] && { [ -z "$DIFF_PATH" ] || [ "$path" = "$DIFF_PATH" ]; }; then diff -u "$base" "$cur" || true; fi
   fi
 done <<< "$FILES"
 anchors=0
