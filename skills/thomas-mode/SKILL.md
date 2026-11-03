@@ -120,7 +120,7 @@ Each rule names the plugin step it changes as `[<plugin> <path> § <step title>]
 
 [pstack skills/show-me-your-work/SKILL.md § Rules]
 
-- Before you `task_remove` a child, grep the trail for its workspace ID, copy every cited file into the parent's trail folder, and point each citation at its copy. Removal deletes the child's scratch folder. (A measurement child's replay summary was lost, and an audit still cited its scratch path.)
+- Before you `task_remove` a child, grep the trail for its workspace ID, copy every cited file into the parent's trail folder, and append a row that maps each cited path to its copy. Old rows stay as they are. Removal deletes the child's scratch folder. (A measurement child's replay summary was lost, and an audit still cited its scratch path.)
 
 ### Figure it out
 
