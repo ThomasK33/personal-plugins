@@ -10,7 +10,7 @@ Paths are relative to this skill's directory (`skillDir` in the `agent_skill_rea
 When you load this skill only for its Amendments (a pstack or egm step that runs without `/thomas-mode`), skip steps 1 and 3 below. Still run step 2, then apply only the "Amendments to plugin steps" rules for the steps you run.
 
 1. Load the `pstack-in-xum` skill from the `fux-plugins` plugin. It maps pstack's Cursor names to Xum. When `scripts/check-drift.sh` reports a change to pstack's `docs/harness/claude-code.md`, check whether `pstack-in-xum` needs a new row.
-2. Run `scripts/check-drift.sh`. On exit 1, name each changed file and read its diff (`--diff`, redirected to a file) for the steps this skill amends. Tell the user what changed before you follow an amended step. Do not stop. On exit 2, report the error and continue without the check.
+2. Run `scripts/check-drift.sh`. On exit 1, look only at the reported files whose steps this task follows. Read their diff (`--diff`, redirected to a file) and tell the user what changed before you follow an amended step. Ignore drift in a file this task does not use: do not read it, and do not mention it in a reply. A skill edit reviews it per "Changing this skill". Do not stop. On exit 2, report the error and continue without the check. (A chat that never used `egm-draft` still listed its drift as a thing to know.)
 3. Load `pstack:poteto-mode` with `agent_skill_read` and follow it, with the rules below.
 
 Precedence: `~/.xum/AGENTS.md`, then his memory (`/memories/global/user-workflow-preferences.md`, read it with the `memory` tool at task start and after every context rollover), then this skill, then poteto-mode and its playbooks. This skill does not repeat AGENTS.md or memory.
