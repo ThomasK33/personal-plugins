@@ -3,8 +3,8 @@
 # Usage: check-drift.sh [--diff | --diff=<path>] [--accept]
 #   --diff         print the upstream diff for each changed file
 #   --diff=<path>  print the upstream diff for one watched file only, such as skills/egm-draft/SKILL.md
-#   --accept  after you reviewed the drift, pin the installed plugin commits in PINNED.
-#             Run it in your personal-plugins clone and commit PINNED.
+#   --accept       after you reviewed the drift, pin the installed plugin commits in PINNED.
+#                  Run it in your personal-plugins clone and commit PINNED.
 # Exit 0: no drift. Exit 1: drift (see output). Exit 2: usage, setup, or network error.
 set -euo pipefail
 trap 'echo "ERR line $LINENO" >&2; exit 2' ERR
