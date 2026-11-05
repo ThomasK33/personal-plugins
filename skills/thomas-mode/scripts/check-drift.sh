@@ -13,6 +13,11 @@ HERE="$(cd "$(dirname "$0")/.." && pwd)"
 PLUGINS="$HOME/.mux/plugins"
 REGISTRY="$HOME/.mux/plugins.json"
 PINS="$HERE/PINNED"
+# github.com and raw.githubusercontent.com answer HTTP 504 now and then. Without --retry-all-errors,
+# curl retries only timeouts and the transient HTTP 5xx and 408/429 answers its manual lists, so a 404
+# (ADDED) still answers at once. --max-time bounds each attempt, so a server that accepts the
+# connection but never answers cannot hang the check.
+CURL_RETRY=(--max-time 20 --retry 4 --retry-delay 2 --retry-max-time 60)
 SHOW_DIFF=0 ACCEPT=0 DIFF_ALL=0 DIFF_PATH=""
 for a in "$@"; do
   case "$a" in
@@ -92,10 +97,13 @@ while read -r plugin path; do
   base="$cache/$plugin/$path"; mkdir -p "$(dirname "$base")"
   url="https://raw.githubusercontent.com/$repo/$pin/${sub#./}/$path"; url="${url/\/.\//\/}"
   if ! grep -qx "$plugin" "$cache/commits-ok" 2>/dev/null; then
-    curl -fsS -o /dev/null "https://github.com/$repo/commit/$pin" || { echo "ERR pinned commit $pin not found in $repo" >&2; exit 2; }
+    # Read the HTTP code, as for the raw file below: only a 404 means the pinned commit is missing.
+    ccode="$(curl -sSL "${CURL_RETRY[@]}" -o /dev/null -w '%{http_code}' "https://github.com/$repo/commit/$pin")" || { echo "ERR cannot fetch github.com commit $pin of $repo" >&2; exit 2; }
+    if [ "$ccode" = 404 ]; then echo "ERR pinned commit $pin not found in $repo" >&2; exit 2; fi
+    [ "$ccode" = 200 ] || { echo "ERR HTTP $ccode for github.com commit $pin of $repo" >&2; exit 2; }
     echo "$plugin" >> "$cache/commits-ok"
   fi
-  code="$(curl -sSL -o "$base" -w '%{http_code}' "$url")" || { echo "ERR cannot fetch $url" >&2; exit 2; }
+  code="$(curl -sSL "${CURL_RETRY[@]}" -o "$base" -w '%{http_code}' "$url")" || { echo "ERR cannot fetch $url" >&2; exit 2; }
   if [ "$code" = 404 ]; then echo "ADDED   $plugin $path (not present at ${pin:0:7})"; drift=1; continue; fi
   [ "$code" = 200 ] || { echo "ERR HTTP $code for $url" >&2; exit 2; }
   if ! cmp -s "$base" "$cur"; then
