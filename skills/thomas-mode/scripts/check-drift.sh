@@ -13,9 +13,11 @@ HERE="$(cd "$(dirname "$0")/.." && pwd)"
 PLUGINS="$HOME/.mux/plugins"
 REGISTRY="$HOME/.mux/plugins.json"
 PINS="$HERE/PINNED"
-# github.com and raw.githubusercontent.com answer HTTP 504 now and then. curl retries only timeouts and
-# 408, 429, 500, 502, 503 and 504 by default, so a 404 (ADDED) still answers at once.
-CURL_RETRY=(--retry 4 --retry-delay 2 --retry-max-time 60)
+# github.com and raw.githubusercontent.com answer HTTP 504 now and then. Without --retry-all-errors,
+# curl retries only timeouts and the transient HTTP 5xx and 408/429 answers its manual lists, so a 404
+# (ADDED) still answers at once. --max-time bounds each attempt, so a server that accepts the
+# connection but never answers cannot hang the check.
+CURL_RETRY=(--max-time 20 --retry 4 --retry-delay 2 --retry-max-time 60)
 SHOW_DIFF=0 ACCEPT=0 DIFF_ALL=0 DIFF_PATH=""
 for a in "$@"; do
   case "$a" in
