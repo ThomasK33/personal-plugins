@@ -97,7 +97,10 @@ while read -r plugin path; do
   base="$cache/$plugin/$path"; mkdir -p "$(dirname "$base")"
   url="https://raw.githubusercontent.com/$repo/$pin/${sub#./}/$path"; url="${url/\/.\//\/}"
   if ! grep -qx "$plugin" "$cache/commits-ok" 2>/dev/null; then
-    curl -fsS "${CURL_RETRY[@]}" -o /dev/null "https://github.com/$repo/commit/$pin" || { echo "ERR pinned commit $pin not found in $repo" >&2; exit 2; }
+    # Read the HTTP code, as for the raw file below: only a 404 means the pinned commit is missing.
+    ccode="$(curl -sSL "${CURL_RETRY[@]}" -o /dev/null -w '%{http_code}' "https://github.com/$repo/commit/$pin")" || { echo "ERR cannot fetch github.com commit $pin of $repo" >&2; exit 2; }
+    if [ "$ccode" = 404 ]; then echo "ERR pinned commit $pin not found in $repo" >&2; exit 2; fi
+    [ "$ccode" = 200 ] || { echo "ERR HTTP $ccode for github.com commit $pin of $repo" >&2; exit 2; }
     echo "$plugin" >> "$cache/commits-ok"
   fi
   code="$(curl -sSL "${CURL_RETRY[@]}" -o "$base" -w '%{http_code}' "$url")" || { echo "ERR cannot fetch $url" >&2; exit 2; }
