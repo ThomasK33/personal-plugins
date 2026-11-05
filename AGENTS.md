@@ -10,5 +10,5 @@ The trigger, channel, attacker and probe lists of a PR live in that PR's trail, 
 
 ### Credential handling in thomas-mode
 
-- The threat-model rule and every lane that tests credential handling in `skills/thomas-mode/SKILL.md` each keep one general trigger, built on who can read a credential, where, or for how long. Do not add another trigger, or a channel, attacker or probe step, to them. Safe path: when the rule or such a lane can miss a case, record the case in that PR's trail.
+- The threat-model rule and every lane that tests credential handling in `skills/thomas-mode/SKILL.md` each keep one general trigger, built on who can read a credential, where, or for how long, and steps that hold for every PR they apply to, such as the canary lane's sandbox and canary. Do not add a trigger, channel, attacker or probe step that holds only for some PRs. Safe path: when the rule or such a lane can miss a case, record the case in that PR's trail.
 - Flag text that lets a lane that tests credential handling hold the real credential or act on a real target.
