@@ -9,9 +9,7 @@
 # Exit 0: no drift. Exit 1: drift (see output). Exit 2: usage, setup, or network error.
 set -euo pipefail
 trap 'echo "ERR line $LINENO" >&2; exit 2' ERR
-HERE="$(cd "$(dirname "$0")/.." && pwd)"
-PLUGINS="$HOME/.mux/plugins"
-REGISTRY="$HOME/.mux/plugins.json"
+HERE="$(cd "$(dirname "$0")/.." && pwd -P)"
 PINS="$HERE/PINNED"
 # github.com and raw.githubusercontent.com answer HTTP 504 now and then. Without --retry-all-errors,
 # curl retries only timeouts and the transient HTTP 5xx and 408/429 answers its manual lists, so a 404
@@ -32,6 +30,14 @@ for a in "$@"; do
 done
 if [ "$DIFF_ALL" = 1 ] && [ -n "$DIFF_PATH" ]; then echo "ERR --diff cannot be combined with --diff=<path>" >&2; exit 2; fi
 if [ "$ACCEPT" = 1 ] && [ "$SHOW_DIFF" = 1 ]; then echo "ERR --accept cannot be combined with --diff" >&2; exit 2; fi
+# The Xum home is XUM_ROOT or MUX_ROOT when set, else ~/.xum, else ~/.mux on older installs.
+XUM_HOME="${XUM_ROOT:-${MUX_ROOT:-}}"
+if [ -z "$XUM_HOME" ]; then
+  for d in "$HOME/.xum" "$HOME/.mux"; do [ -f "$d/plugins.json" ] && { XUM_HOME="$d"; break; }; done
+fi
+[ -n "$XUM_HOME" ] || { echo "ERR no plugins.json in \$XUM_ROOT, \$MUX_ROOT, ~/.xum or ~/.mux" >&2; exit 2; }
+PLUGINS="$XUM_HOME/plugins"
+REGISTRY="$XUM_HOME/plugins.json"
 [ -f "$REGISTRY" ] || { echo "ERR no $REGISTRY" >&2; exit 2; }
 [ -f "$PINS" ] || { echo "ERR no $PINS" >&2; exit 2; }
 
@@ -58,7 +64,7 @@ installed() { python3 - "$REGISTRY" "$1" <<'PY'
 import json, re, sys
 for p in json.load(open(sys.argv[1]))["plugins"]:
     if p["name"] == sys.argv[2]:
-        m = re.match(r"https://github\.com/([^/]+/[^/]+?)/?$", p["source"]["url"])
+        m = re.match(r"(?:https://|ssh://git@|git@)github\.com[/:]([^/]+/[^/]+?)(?:\.git)?/?$", p["source"]["url"])
         if not m: sys.exit(f"unsupported source {p['source']['url']}")
         print(p["lockedSha"], m.group(1), p["source"].get("subpath") or ".")
         break
@@ -75,7 +81,7 @@ done <<< "$FILES"
 
 if [ "$ACCEPT" = 1 ]; then
   [ "$missing" = 0 ] || { echo "ERR refusing --accept while a file is MISSING" >&2; exit 2; }
-  case "$HERE" in "$PLUGINS"/*) echo "WARN $HERE is an installed plugin copy. Plugin updates replace it. Run --accept in your clone and commit PINNED." >&2 ;; esac
+  case "$HERE" in "$(cd "$PLUGINS" && pwd -P)"/*) echo "WARN $HERE is an installed plugin copy. Plugin updates replace it. Run --accept in your clone and commit PINNED." >&2 ;; esac
   tmp="$(mktemp)"
   while read -r plugin; do read -r sha _ <<< "$(installed "$plugin")"; [ -n "${sha:-}" ] || { echo "ERR plugin $plugin not in $REGISTRY" >&2; exit 2; }; echo "$plugin $sha" >> "$tmp"; done <<< "$PLUGIN_SET"
   mv "$tmp" "$PINS"; echo "pinned:"; cat "$PINS"; exit 0
@@ -120,5 +126,5 @@ while IFS= read -r a; do
   title="$(sed -E 's/^\[[^ ]+ [^ ]+ § (.*)\]$/\1/' <<< "$a")"
   grep -qF -- "$title" "$PLUGINS/$plugin/$path" 2>/dev/null || { echo "ANCHOR  $plugin $path: step '$title' not found"; drift=1; }
 done <<< "$ANCHORS"
-echo "summary: $checked files, $anchors anchors, drift=$drift"
+echo "summary: $checked files, $anchors anchors, registry $REGISTRY, drift=$drift"
 exit "$drift"
