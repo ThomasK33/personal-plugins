@@ -30,7 +30,7 @@ for a in "$@"; do
 done
 if [ "$DIFF_ALL" = 1 ] && [ -n "$DIFF_PATH" ]; then echo "ERR --diff cannot be combined with --diff=<path>" >&2; exit 2; fi
 if [ "$ACCEPT" = 1 ] && [ "$SHOW_DIFF" = 1 ]; then echo "ERR --accept cannot be combined with --diff" >&2; exit 2; fi
-# The Xum home is XUM_ROOT or MUX_ROOT when set, else ~/.xum, else ~/.mux on older installs.
+# The Xum home is XUM_ROOT or MUX_ROOT when set, else the first of ~/.xum and ~/.mux (older installs) that holds a plugins.json.
 XUM_HOME="${XUM_ROOT:-${MUX_ROOT:-}}"
 if [ -z "$XUM_HOME" ]; then
   for d in "$HOME/.xum" "$HOME/.mux"; do [ -f "$d/plugins.json" ] && { XUM_HOME="$d"; break; }; done
