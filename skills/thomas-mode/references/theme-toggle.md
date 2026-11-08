@@ -4,7 +4,7 @@ The "Theme toggle" rule in `SKILL.md` points here. Copy the three blocks below i
 
 ## Markup
 
-Put it at the right end of the top bar. With no top bar, put it in a header row at the top right, in the page flow, not over the content. This is the product look. In the brand look, drop the `ck-segmented` and `ck-segment` classes.
+Put it at the right end of the top bar. With no top bar, put it in a header row at the top right, in the page flow, not over the content. The markup below is the product look. In the brand look, drop the `ck-segmented` and `ck-segment` classes.
 
 ```html
 <div class="ck-segmented theme-toggle" role="tablist" aria-label="Theme" data-theme-toggle>
@@ -78,7 +78,7 @@ Put it at the end of `<body>`, before any script that calls `artifactTheme()`. I
 
 ## The rest of the page
 
-- A script that picks colors (code highlighting, Mermaid, charts) draws with `artifactTheme()`, which returns `"light"` or `"dark"`. It draws again on each `themechange` event on `document`. The event fires once at load, and then each time the shown theme changes: on a choice, and in Auto on a host theme change, or on an OS theme change when there is no host.
+- A script that picks colors (code highlighting, Mermaid, charts) draws with `artifactTheme()`, which returns `"light"` or `"dark"`. It draws once itself, and again on each `themechange` event on `document`. The event fires each time the shown theme changes: on a choice, and in Auto on a host theme change, or on an OS theme change when there is no host.
 - Every other `window.xum.setState` call on the page keeps the `theme` key: `xum.setState({ ...xum.state, ...yours })`. `setState` replaces the whole object.
 
 ## Check

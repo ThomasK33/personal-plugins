@@ -22,17 +22,20 @@ let __s = JSON.parse(new URLSearchParams(location.search).get('state') || 'null'
 window.xum = { get state() { return __s ? JSON.parse(JSON.stringify(__s)) : null; },
   setState(n) { __s = JSON.parse(JSON.stringify(n)); window.__setCalls = (window.__setCalls || 0) + 1; } };
 </script>"""
+nostore = """<script>
+Object.defineProperty(window, 'localStorage', { get() { throw new DOMException('denied', 'SecurityError'); } });
+</script>"""
 for look in ("product", "brand"):
-    for xum in (False, True):
+    for xum in ("", "-xum", "-nostore"):
         head = (f'<link rel="stylesheet" href="{kb}/kit/coder-kit.css"><script src="{kb}/kit/coder-kit.js"></script>'
                 if look == "product" else f'<link rel="stylesheet" href="{kb}/tokens/coder-brand.css">')
         mark = b["html"] if look == "product" else b["html"].replace(' class="ck-segmented theme-toggle"', ' class="theme-toggle"').replace(' class="ck-segment"', '')
-        page = f"""<!doctype html><html><head><meta charset=utf-8>{head}<style>{b['css']}</style>{fake if xum else ''}</head>
-<body{' class="ck-page"' if look == 'product' else ''}><header style="display:flex;justify-content:space-between"><b>Test</b>{mark}</header>
+        page = f"""<!doctype html><html><head><meta charset=utf-8>{head}<style>{b['css']}</style><script>window.__errors = []; addEventListener('error', e => window.__errors.push(String(e.message)));</script>{fake if xum == '-xum' else nostore if xum == '-nostore' else ''}</head>
+<body{' class="ck-page"' if look == 'product' else ''}><form onsubmit="window.__submitted = 1; return false"><header style="display:flex;justify-content:space-between"><b>Test</b>{mark}</header></form>
 <p class="only-light" id="L">light</p><p class="only-dark" id="D">dark</p>
 <script>window.__events = []; document.addEventListener('themechange', e => window.__events.push(e.detail.theme));</script>
 <script>{b['js']}</script></body></html>"""
-        open(f"{out}/{look}{'-xum' if xum else ''}.html", "w").write(page)
+        open(f"{out}/{look}{xum}.html", "w").write(page)
 PY
 pass=0; fail=0
 ab(){ local out; if ! out=$(agent-browser "$@" 2>&1); then echo "ERR agent-browser $1: $out" >&2; echo "$1" >> "$D/errors"; fi; printf '%s\n' "$out"; }
@@ -44,6 +47,8 @@ opp(){ [ "$1" = light ] && echo dark || echo light; }
 for look in product brand; do
   ab set media light >/dev/null; ab open "file://$D/$look.html" >/dev/null
   ev 'localStorage.clear()' >/dev/null; ab reload >/dev/null
+  chk "$look one themechange at load" "light" "$(ev 'window.__events.join("|")')"
+  chk "$look buttons are type=button" "button,button,button" "$(ev '[...document.querySelectorAll("[data-theme-set]")].map(b=>b.type).join(",")')"
   for host in light dark; do
     ab set media "$(opp $host)" >/dev/null
     ev "document.documentElement.dataset.xumTheme='$host'" >/dev/null
@@ -53,6 +58,12 @@ for look in product brand; do
       chk "$look host=$host os=$(opp $host) choice=$choice" "$exp,$exp,$exp,$choice" "$(ev "$STATE")"
     done
   done
+  chk "$look roving tabindex" "-1,-1,0" "$(ev '[...document.querySelectorAll("[data-theme-set]")].map(b=>b.tabIndex).join(",")')"
+  chk "$look clicks submit no form" "none" "$(ev 'String(window.__submitted||"none")')"
+  ev "document.querySelector('[data-theme-set=auto]').click(); window.__events.length=0" >/dev/null
+  ab set media dark >/dev/null; sleep 0.3
+  chk "$look auto ignores OS change under a host" "" "$(ev 'window.__events.join("|")')"
+  ab set media light >/dev/null; sleep 0.3
   ev "document.querySelector('[data-theme-set=auto]').click(); delete document.documentElement.dataset.xumTheme" >/dev/null
   for os in light dark; do
     ab set media $os >/dev/null; sleep 0.3
@@ -69,6 +80,13 @@ for look in product brand; do
   chk "$look auto host change fires themechange" "dark" "$(ev 'window.__events.join("|")')"
   ev "document.querySelector('[data-theme-set=dark]').click(); window.__events.length=0; document.documentElement.dataset.xumTheme='light'" >/dev/null; sleep 0.2
   chk "$look dark choice ignores host change" "" "$(ev 'window.__events.join("|")')"
+  ev "document.querySelector('[data-theme-set=light]').click(); document.documentElement.dataset.xumTheme='light'" >/dev/null; sleep 0.2
+  ev "window.__events.length=0; document.documentElement.dataset.xumTheme='dark'" >/dev/null; sleep 0.2
+  chk "$look light choice ignores host change" ",light" "$(ev '[window.__events.join("|"), artifactTheme()].join(",")')"
+  ev "delete document.documentElement.dataset.xumTheme" >/dev/null; ab set media dark >/dev/null; sleep 0.3
+  chk "$look light choice ignores OS change" ",light" "$(ev '[window.__events.join("|"), artifactTheme()].join(",")')"
+  ab set media light >/dev/null; sleep 0.3
+  ev "document.querySelector('[data-theme-set=dark]').click()" >/dev/null
   ab reload >/dev/null
   chk "$look localStorage keeps choice after reload" "dark,dark" "$(ev '[document.body.dataset.theme, [...document.querySelectorAll("[data-theme-set]")].find(s=>s.getAttribute("aria-selected")==="true").dataset.themeSet].join(",")')"
 done
@@ -87,6 +105,11 @@ ab focus '[data-theme-set=light]' >/dev/null; ab press ArrowRight >/dev/null; sl
 chk "$look arrow key selects dark" "dark" "$(ev 'document.body.dataset.theme||"auto"')"
 ab focus '[data-theme-set=dark]' >/dev/null; ab press ArrowLeft >/dev/null; ab press ArrowLeft >/dev/null; sleep 0.2; ab reload >/dev/null
 chk "$look arrow choice auto kept after reload" "auto,auto" "$(ev "[document.body.dataset.theme||'auto', $SEL].join(',')")"
+ab focus '[data-theme-set=auto]' >/dev/null; ab press ArrowLeft >/dev/null; sleep 0.2
+chk "$look ArrowLeft from auto wraps to dark" "dark,dark" "$(ev "[document.body.dataset.theme||'auto', document.activeElement.dataset.themeSet].join(',')")"
+ab press ArrowRight >/dev/null; sleep 0.2
+chk "$look ArrowRight from dark wraps to auto" "auto,auto" "$(ev "[document.body.dataset.theme||'auto', document.activeElement.dataset.themeSet].join(',')")"
+chk "$look arrow key default is prevented" "true" "$(ev 'String(!document.activeElement.dispatchEvent(new KeyboardEvent("keydown",{key:"ArrowRight",bubbles:true,cancelable:true})))')"
 done
 # Xum state (fake window.xum)
 for look in product brand; do
@@ -98,8 +121,13 @@ for look in product brand; do
   chk "$look xum saves light" "light" "$(ev 'window.xum.state.theme')"
   ev "document.querySelector('[data-theme-set=auto]').click()" >/dev/null; sleep 0.2
   chk "$look xum saves auto" "auto" "$(ev 'window.xum.state.theme')"
-  ab open "file://$D/$look-xum.html?state=%7B%22answers%22%3A1%2C%22theme%22%3A%22light%22%7D" >/dev/null; sleep 0.2
-  chk "$look xum state restores choice without saving" "light,light,undefined" "$(ev '[document.body.dataset.theme,[...document.querySelectorAll("[data-theme-set]")].find(s=>s.getAttribute("aria-selected")==="true").dataset.themeSet,String(window.__setCalls)].join(",")')"
+  for v in light dark auto; do
+    ab open "file://$D/$look-xum.html?state=%7B%22answers%22%3A1%2C%22theme%22%3A%22$v%22%7D" >/dev/null; sleep 0.2
+    chk "$look xum state restores $v without saving" "$v,$v,undefined" "$(ev '[document.body.dataset.theme||"auto",[...document.querySelectorAll("[data-theme-set]")].find(s=>s.getAttribute("aria-selected")==="true").dataset.themeSet,String(window.__setCalls)].join(",")')"
+  done
+  ab open "file://$D/$look-nostore.html" >/dev/null; sleep 0.2
+  ev "document.querySelector('[data-theme-set=dark]').click()" >/dev/null; sleep 0.2
+  chk "$look works when storage throws" "dark,0" "$(ev '[document.body.dataset.theme, window.__errors.length].join(",")')"
 done
 errs=0; [ -f "$D/errors" ] && errs=$(wc -l < "$D/errors")
 fail=$((fail+errs))
