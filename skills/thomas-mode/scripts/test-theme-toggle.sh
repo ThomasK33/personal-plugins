@@ -1,7 +1,9 @@
 #!/usr/bin/env bash
 # Tests the snippet in references/theme-toggle.md in a real browser: it builds pages from the
-# file's html, css and js blocks (product and brand look, with and without a fake window.xum),
-# then checks each choice under each host and OS, host changes, arrow keys and saved state.
+# file's html, css and js blocks (product and brand look; plain, with a fake window.xum, and with
+# storage that throws),
+# then checks each choice under each host and OS (background, text color, assets, selection),
+# themechange events, arrow keys, buttons, and saved state in localStorage and a fake window.xum.
 # Needs agent-browser and the coder-brand skill (CODER_BRAND_DIR). Prints one line per check
 # and a final COUNT line; exits 1 on any failure.
 set -uo pipefail
@@ -42,6 +44,7 @@ ab(){ local out; if ! out=$(agent-browser "$@" 2>&1); then echo "ERR agent-brows
 ev(){ ab eval "$1" | tail -1 | sed 's/^"//;s/"$//'; }
 chk(){ # name expected actual
   if [ "$2" = "$3" ]; then pass=$((pass+1)); echo "PASS $1"; else fail=$((fail+1)); echo "FAIL $1 expected=$2 got=$3"; fi; }
+# STATE: background theme, theme implied by the text color (dark text = light), artifactTheme(), visible asset, selected choice.
 STATE='(()=>{const c=getComputedStyle(document.body).backgroundColor.match(/[\d.]+/g).map(Number);const lum=(0.2126*c[0]+0.7152*c[1]+0.0722*c[2])/255;const vis=id=>getComputedStyle(document.getElementById(id)).display!=="none";const sel=[...document.querySelectorAll("[data-theme-set]")].filter(s=>s.getAttribute("aria-selected")==="true").map(s=>s.dataset.themeSet).join("+");const f=getComputedStyle(document.body).color.match(/[\d.]+/g).map(Number);const flum=(0.2126*f[0]+0.7152*f[1]+0.0722*f[2])/255;return [lum<0.5?"dark":"light",flum<0.5?"light":"dark",artifactTheme(),vis("L")&&!vis("D")?"light":(vis("D")&&!vis("L")?"dark":"both"),sel].join(",")})()'
 opp(){ [ "$1" = light ] && echo dark || echo light; }
 for look in product brand; do
@@ -88,7 +91,6 @@ for look in product brand; do
   ev "document.querySelector('[data-theme-set=dark]').click(); window.__events.length=0" >/dev/null
   ab set media light >/dev/null; sleep 0.3
   chk "$look dark choice ignores OS change" ",dark,dark" "$(ev '[window.__events.join("|"), artifactTheme(), document.body.dataset.theme].join(",")')"
-  ev "document.querySelector('[data-theme-set=dark]').click()" >/dev/null
   ab reload >/dev/null
   chk "$look localStorage keeps choice after reload" "dark,dark" "$(ev '[document.body.dataset.theme, [...document.querySelectorAll("[data-theme-set]")].find(s=>s.getAttribute("aria-selected")==="true").dataset.themeSet].join(",")')"
 done
