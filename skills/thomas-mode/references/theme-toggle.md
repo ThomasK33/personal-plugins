@@ -8,9 +8,9 @@ Put it at the right end of the top bar. With no top bar, put it in a header row 
 
 ```html
 <div class="ck-segmented theme-toggle" role="tablist" aria-label="Theme" data-theme-toggle>
-  <button class="ck-segment" role="tab" data-theme-set="auto" aria-selected="true">Auto</button>
-  <button class="ck-segment" role="tab" data-theme-set="light" aria-selected="false">Light</button>
-  <button class="ck-segment" role="tab" data-theme-set="dark" aria-selected="false">Dark</button>
+  <button type="button" class="ck-segment" role="tab" data-theme-set="auto" aria-selected="true">Auto</button>
+  <button type="button" class="ck-segment" role="tab" data-theme-set="light" aria-selected="false">Light</button>
+  <button type="button" class="ck-segment" role="tab" data-theme-set="dark" aria-selected="false">Dark</button>
 </div>
 ```
 
@@ -32,7 +32,7 @@ body[data-theme="light"] .only-dark, body[data-theme="dark"] .only-light,
 
 ## Script
 
-Put it at the end of `<body>`. It follows clicks and the arrow keys of `coder-kit.js`, which move the selection without a click. In Xum, whose frame has no storage, it saves the choice in `window.xum.state`. A republished version starts empty. Elsewhere it uses `localStorage`.
+Put it at the end of `<body>`, before any script that calls `artifactTheme()`. It handles clicks and the Left and Right arrow keys itself, in both looks, the same way `coder-kit.js` does. In Xum, whose frame has no storage, it saves the choice in `window.xum.state`, which a republish to the same path keeps. Elsewhere it uses `localStorage`.
 
 ```js
 (() => {
@@ -56,18 +56,21 @@ Put it at the end of `<body>`. It follows clicks and the arrow keys of `coder-ki
     if (v === choice) return;
     choice = v;
     if (v === "auto") delete body.dataset.theme; else body.dataset.theme = v;
-    for (const s of segs) if (s.getAttribute("aria-selected") !== String(s.dataset.themeSet === v)) s.setAttribute("aria-selected", String(s.dataset.themeSet === v));
+    for (const s of segs) { s.setAttribute("aria-selected", String(s.dataset.themeSet === v)); s.tabIndex = s.dataset.themeSet === v ? 0 : -1; }
     if (persist) save(v);
     announce();
   }
   window.artifactTheme = current;
   for (const s of segs) s.addEventListener("click", () => apply(s.dataset.themeSet, true));
-  if (toggle) new MutationObserver(() => {
-    const s = segs.find((x) => x.getAttribute("aria-selected") === "true");
-    if (s) apply(s.dataset.themeSet, true);
-  }).observe(toggle, { subtree: true, attributeFilter: ["aria-selected"] });
+  if (toggle) toggle.addEventListener("keydown", (e) => {
+    const at = segs.indexOf(e.target);
+    if (at < 0 || (e.key !== "ArrowLeft" && e.key !== "ArrowRight")) return;
+    const next = segs[(at + (e.key === "ArrowRight" ? 1 : segs.length - 1)) % segs.length];
+    apply(next.dataset.themeSet, true);
+    next.focus();
+    e.preventDefault();
+  });
   new MutationObserver(announce).observe(root, { attributeFilter: ["data-xum-theme"] });
-  addEventListener("xumthemechange", announce);
   os.addEventListener("change", announce);
   apply(load(), false);
 })();
@@ -75,9 +78,11 @@ Put it at the end of `<body>`. It follows clicks and the arrow keys of `coder-ki
 
 ## The rest of the page
 
-- A script that picks colors (code highlighting, Mermaid, charts) draws with `artifactTheme()`, which returns `"light"` or `"dark"`. It draws again on each `themechange` event on `document`. The event fires on a choice, and in Auto when the host or the OS theme changes.
+- A script that picks colors (code highlighting, Mermaid, charts) draws with `artifactTheme()`, which returns `"light"` or `"dark"`. It draws again on each `themechange` event on `document`. The event fires once at load, and then each time the shown theme changes: on a choice, and in Auto on a host theme change, or on an OS theme change when there is no host.
 - Every other `window.xum.setState` call on the page keeps the `theme` key: `xum.setState({ ...xum.state, ...yours })`. `setState` replaces the whole object.
 
 ## Check
 
 Before you publish, check the three choices under a light and a dark host: six states. To set the host, set `data-xum-theme` on `<html>`. The script follows that attribute, so no event is needed. For each Auto state, also set the OS theme to the opposite of the host (`agent-browser set media`), so that a page that follows the OS instead of the host fails. Also remove the attribute and check Auto under a light and a dark OS. Then move the choice with an arrow key, and reload to see it restored. In Xum, the other keys in `window.xum.state` must survive. `scripts/test-theme-toggle.sh` runs all of these on the snippet alone.
+
+Two things stay with the host: the scrollbars, which follow the `color-scheme` of `<html>`, and the color that Xum paints around the frame. Both can show the host's theme after a Light or Dark choice.
