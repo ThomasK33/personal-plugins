@@ -1,6 +1,6 @@
 # Theme toggle
 
-The "Theme toggle" rule in `SKILL.md` points here. Copy the three blocks below into the page. They are tested together: change them only when you test the page again.
+The "Theme toggle" rule in `SKILL.md` points here. Copy the three blocks below into the page. `scripts/test-theme-toggle.sh` tests them together: run it after any change to them.
 
 ## Markup
 
