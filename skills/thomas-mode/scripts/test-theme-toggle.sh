@@ -11,8 +11,11 @@ HERE=$(cd "$(dirname "$0")/.." && pwd)
 KB=${CODER_BRAND_DIR:-$HOME/.xum/plugins/fux-plugins/skills/coder-brand}
 [ -f "$KB/kit/coder-kit.css" ] || { echo "ERR coder-brand not found at $KB (set CODER_BRAND_DIR)"; exit 2; }
 command -v agent-browser >/dev/null || { echo "ERR agent-browser not found"; exit 2; }
-D=$(mktemp -d); trap 'agent-browser close >/dev/null 2>&1; rm -rf "$D"' EXIT
+D=$(mktemp -d)
 export AGENT_BROWSER_SESSION=theme-toggle-$$
+# Keep the session's files (agent-browser leaves <session>.config after close) in $D, which the trap deletes.
+export AGENT_BROWSER_SOCKET_DIR="$D/ab"
+trap 'agent-browser close >/dev/null 2>&1; rm -rf "$D"' EXIT
 python3 - "$HERE/references/theme-toggle.md" "$KB" "$D" <<'PY'
 import re, sys
 md, kb, out = sys.argv[1:]
