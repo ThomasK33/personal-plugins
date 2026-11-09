@@ -1,6 +1,6 @@
 # Verifier shadow study
 
-The "Shadow verifier study" rule under `Swarm-verify once` in `SKILL.md` points here. This file holds the ledger format, the terms and the final report.
+The "Shadow verifier study" rule under `Swarm-verify once` in `SKILL.md` points here. This file holds the ledger format, the end marker, the terms and the final report.
 
 ## Terms
 
@@ -14,9 +14,9 @@ The "Shadow verifier study" rule under `Swarm-verify once` in `SKILL.md` points 
 
 ## Ledger
 
-Phase 2 starts at the merge of personal-plugins #42 (commit `f5c8bcf`). It ends when a root writes the row that makes the 30th full head, or when he ends the study. A phase 2 brief is a brief that a root sends between these two moments under a version of the "Shadow verifier study" rule in `SKILL.md` that names two shadow models, also when a shadow is missing. Every other brief that a root sends before phase 2 ends is a phase 1 brief. A root writes no row for a brief that it sends after phase 2 ends.
+Phase 2 starts at the merge of personal-plugins #42 (commit `f5c8bcf`). It ends when a root creates the end marker, the file `~/.xum/analysis/verifier-shadow/phase2-ended`. A phase 2 brief is a brief that a root sends after the start, under a version of the "Shadow verifier study" rule in `SKILL.md` that names two shadow models, while its last check found no end marker. A shadow can be missing. Every other brief that a root sends before its last check found the end marker is a phase 1 brief. A root writes no row for a brief that it sends after its check found the end marker.
 
-Several roots write to the same ledgers. Before each verify brief, each time one of its shadows reports, and before its final report, a root counts the full heads in `ledger-phase2.tsv`. When it counts 30 or more, phase 2 has ended: the root sends any new brief to the primary only, writes no row for that brief, and stops each of its own shadows that is still running. A replacement primary is part of its original brief, not a new brief, and gets rows only for the heads that it checks. Every write to either ledger, the creation of the file and each `later` update included, holds an exclusive `flock` on `~/.xum/analysis/verifier-shadow/ledger.lock`.
+Several roots share the ledgers and the end marker. A root holds an exclusive `flock` on `~/.xum/analysis/verifier-shadow/ledger.lock` while it reads or writes them: a check for the end marker, a count of full heads, a new ledger file, an appended row and a `later` update. Before each verify brief, and each time one of its shadows reports, a root checks for the end marker. When the marker exists, the root sends any new brief to the primary only, writes no row for that brief, and stops each of its own shadows that is still running. After a root appends rows to `ledger-phase2.tsv`, it counts the full heads in the same hold of the lock. When the count reaches 30 and no end marker exists, it creates the marker. A replacement primary is part of its original brief, not a new brief, and gets rows only for the heads that it checks.
 
 Phase 2 has its own ledger, `~/.xum/analysis/verifier-shadow/ledger-phase2.tsv`. The root writes no row of a phase 2 brief to the phase 1 file, `ledger.tsv`. The root creates the phase 2 file on first use with this header row:
 
@@ -26,7 +26,7 @@ date_utc	repo	pr	head_sha	brief_id	role	model	task_id	verdict	cost_usd	wall_min	
 
 `brief_id` is the task ID of the first primary of that brief, and all verifiers of one brief share it, a replacement primary included. `role` is `primary` or `shadow`. When a phase 1 brief ends after phase 2 starts, the root writes its rows to `ledger.tsv` with that file's own columns.
 
-1. The root writes the rows of a verifier when its task ends for any reason: it gave its last report, after the root asked again for any missing `VERDICT` line, or the root stopped it, or it failed. It writes one row per PR head of the brief. The root writes no row for an interim report or a question.
+1. The root writes the rows of a verifier when its task ends for any reason: it gave its last report, after the root asked again for any missing `VERDICT` line, or the root stopped it, or it failed. It writes one row per PR head of the brief, and a replacement primary one row per head that it checks. The root writes no row for an interim report or a question.
 2. `verdict` is `PASS`, `ISSUES`, or `none` when the verifier ended without a `VERDICT` line for that head.
 3. `cost_usd` is the verifier's subtree cost from `session-usage.json` when its task ends. `wall_min` is the minutes from the brief to the end of the task. `brief_prs` is the number of PRs in that brief. The rows of one verifier for one brief repeat the same cost and wall time, so divide by `brief_prs` before summing.
 4. `blockers` lists each finding that the verifier named, each with its blocker class, and marks the ones it gave as a reason for ISSUES.
@@ -34,7 +34,7 @@ date_utc	repo	pr	head_sha	brief_id	role	model	task_id	verdict	cost_usd	wall_min	
 
 ## Final report
 
-The report counts one brief per head: the brief whose row first makes the head full, in line order of `ledger-phase2.tsv`. Its rows are the counted rows of that head, and the report uses no other rows of that head. The phase 2 cohort is the first 30 full heads in `ledger-phase2.tsv`, in line order of the row that makes each head full. When a root writes that row for the 30th full head, it sends no more briefs to shadows and stops each of its own shadows that is still running. That root writes the final report. A brief whose shadow the root stopped before that shadow gave its `VERDICT` line for the head does not make that head full, and a brief that made that head full in an earlier line still counts. It reports when the cutoff of each head in the cohort has passed. When he ends the study early, the root that he tells first stops each of its own shadows that is still running and writes their rows. Then it reports at once, and the moment it sends that report is the cutoff for every open PR. The report uses only the rows that any root wrote before it. A primary that is still running keeps checking its PR, and its brief does not make its head full.
+The report counts one brief per head: the brief whose row first makes the head full, in line order of `ledger-phase2.tsv`. Its rows are the counted rows of that head, and the report uses no other rows of that head. The phase 2 cohort is the first 30 full heads in `ledger-phase2.tsv`, in line order of the row that makes each head full. The root that writes that row for the 30th full head creates the end marker, stops each of its own shadows that is still running, and writes the final report. A brief whose shadow the root stopped before that shadow gave its `VERDICT` line for the head does not make that head full, and a brief that made that head full in an earlier line still counts. That root reports when the cutoff of each head in the cohort has passed. When he ends the study early, the root that he tells first creates the end marker, stops each of its own shadows that is still running, and writes their rows. Then it reports at once, and the moment it sends that report is the cutoff for every open PR. The report uses only the rows that any root wrote before it. A primary that is still running keeps checking its PR, and its brief does not make its head full.
 
 The report holds:
 
