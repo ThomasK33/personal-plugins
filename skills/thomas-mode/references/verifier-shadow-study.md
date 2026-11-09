@@ -5,7 +5,7 @@ The "Shadow verifier study" rule under `Swarm-verify once` in `SKILL.md` points 
 ## Terms
 
 - **Primary:** the `swarm workers` verifier that the root briefs.
-- **Shadow:** each of the two verifiers, on `openai:gpt-6.1-sol` and on `anthropic:claude-opus-5-5`, that get the same brief at the same head as the primary.
+- **Shadow:** one of the two verifiers that get the same brief at the same head as the primary. `SKILL.md` sets their models.
 - **Blocker class:** the root sorts every finding of every verifier as valid blocker, valid minor or invalid. It sorts them as it sorts any review finding.
 - **Correct verdict:** PASS on a head with no valid blocker, or ISSUES that names at least one valid blocker of that head as a reason for ISSUES. The root counts the `later` column when it decides whether a head has a valid blocker.
 - **False block:** ISSUES on a head with no valid blocker.
@@ -14,13 +14,13 @@ The "Shadow verifier study" rule under `Swarm-verify once` in `SKILL.md` points 
 
 ## Ledger
 
-Phase 2 has its own ledger, `~/.xum/analysis/verifier-shadow/ledger-phase2.tsv`. The root writes phase 2 rows only there and writes no new rows to the phase 1 file, `ledger.tsv`. On first use it creates the phase 2 file with this header row:
+Phase 2 has its own ledger, `~/.xum/analysis/verifier-shadow/ledger-phase2.tsv`. The root writes no row of a phase 2 brief to the phase 1 file, `ledger.tsv`. The root creates the phase 2 file on first use with this header row:
 
 ```
 date_utc	repo	pr	head_sha	brief_id	role	model	task_id	verdict	cost_usd	wall_min	brief_prs	blockers	later
 ```
 
-`brief_id` is the task ID of the primary of that brief, and all three verifiers of one brief share it. `role` is `primary` or `shadow`. A brief that the root sent under the phase 1 rule writes its rows to `ledger.tsv`, even when it ends later.
+`brief_id` is the task ID of the first primary of that brief, and all verifiers of one brief share it, a replacement primary included. `role` is `primary` or `shadow`. When a brief that the root sent with only the gpt-6.1-sol shadow ends after this rule, the root writes its rows to `ledger.tsv` with that file's own columns.
 
 1. The root writes the rows of a verifier when its task ends for any reason: it gave its last report, after the root asked again for any missing `VERDICT` line, or the root stopped it, or it failed. It writes one row per PR head of the brief. The root writes no row for an interim report or a question.
 2. `verdict` is `PASS`, `ISSUES`, or `none` when the verifier ended without a `VERDICT` line for that head.
@@ -30,13 +30,13 @@ date_utc	repo	pr	head_sha	brief_id	role	model	task_id	verdict	cost_usd	wall_min	
 
 ## Final report
 
-The phase 2 cohort is the first 30 full heads in `ledger-phase2.tsv`, in the order in which the root writes the row that makes each head full. A head that two briefs make full counts once, through its first full brief. When the root writes that row for the 30th full head, the root sends no more briefs to shadows and stops every shadow that is still running. The heads of those shadows are not full. The root reports when the cutoff of each head in the cohort has passed. When he ends the study early, the root first stops every study verifier that is still running and writes its rows. Then it reports at once, and the moment it sends that report is the cutoff for every open PR.
+The report counts one brief per head: the first brief that makes the head full. Its rows are the counted rows of that head, and the report uses no other rows of that head. The phase 2 cohort is the first 30 full heads in `ledger-phase2.tsv`, in the order in which the root writes the row that makes each head full. When the root writes that row for the 30th full head, the root sends no more briefs to shadows and stops every shadow that is still running. A brief whose shadow the root stopped does not make its head full, and an earlier full brief of that head still counts. The root reports when the cutoff of each head in the cohort has passed. When he ends the study early, the root first stops every shadow that is still running and writes its rows. Then it reports at once, and the moment it sends that report is the cutoff for every open PR.
 
 The report holds:
 
-1. Correct verdicts, false blocks and misses for each model, counted over the full heads of the cohort only.
-2. Valid blockers that only one model found, and for each shadow the valid blockers that it found and the primary missed, on the full heads of the cohort.
-3. Cost and wall time for each model, over its rows on the full heads of the cohort.
+1. Correct verdicts, false blocks and misses for each model, over the counted rows of the cohort.
+2. Valid blockers that only one model found, and for each shadow the valid blockers that it found and the primary missed, in the counted rows of the cohort.
+3. Cost and wall time for each model, over its counted rows of the cohort.
 4. The heads in `ledger-phase2.tsv` that were not full, with the role, the model and the reason: shadow missing, shadow stopped, shadow failed, shadow ended without a `VERDICT` line, primary stopped, failed or ended without a `VERDICT` line, or primary on another model.
 
-For phase 1 (Sonnet and gpt-6.1-sol only, `ledger.tsv`), `~/.xum/analysis/verifier-shadow/phase1-2026-11-08/live_judgment.md` gives the judgment of its 125-row snapshot `ledger-snapshot.tsv`. Over 53 scored head checks: Sonnet 43 correct, 6 false blocks, 4 misses, and gpt-6.1-sol 38 correct, 11 false blocks, 4 misses. The earlier baseline is the replay of 17 frozen PR heads in `~/.xum/analysis/verifier-shadow/replay-2026-11-07/`. Its `JUDGE.md` and `JUDGE_W2.md` used looser terms, and `rescored-strict.json` scores it again with the terms above: Sonnet 9 correct, 3 false blocks, 5 misses, and gpt-6.1-sol 11 correct, 5 false blocks, 1 miss. After the report, the root asks him which model the verifier role uses, which shadows to keep, and whether to remove the study rule from `SKILL.md`.
+For phase 1 (Sonnet and gpt-6.1-sol only, `ledger.tsv`), `~/.xum/analysis/verifier-shadow/phase1-2026-11-08/live_judgment.md` gives the judgment of its 125-row snapshot `ledger-snapshot.tsv`. Over 53 scored head checks, it gives Sonnet 43 correct, 6 false blocks, 4 misses, and gpt-6.1-sol 38 correct, 11 false blocks, 4 misses. The earlier baseline is the replay of 17 frozen PR heads in `~/.xum/analysis/verifier-shadow/replay-2026-11-07/`. Its `JUDGE.md` and `JUDGE_W2.md` used looser terms, and `rescored-strict.json` scores it again with the terms above: Sonnet 9 correct, 3 false blocks, 5 misses, and gpt-6.1-sol 11 correct, 5 false blocks, 1 miss. After the report, the root asks him which model the verifier role uses, which shadows to keep, and whether to remove the study rule from `SKILL.md`.
