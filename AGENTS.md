@@ -15,4 +15,4 @@ The trigger, channel, attacker and probe lists of a PR live in that PR's trail, 
 
 ### Shadow verifier study in thomas-mode
 
-- The study reference (`skills/thomas-mode/references/verifier-shadow-study.md`) coordinates several roots only through the end marker and one `flock`. Flag text that adds another cross-root protocol: a report owner, a report claim, an acknowledgement from other roots, or a lock held across a brief launch. A shadow run after the end costs money but changes no result, and the operator accepted that.
+- Banned premise: every root learns of the end of phase 2 at once, or one root owns the report. The study reference (`skills/thomas-mode/references/verifier-shadow-study.md`) coordinates several roots only through the shared ledgers, the end marker and one `flock`. Flag text that adds another cross-root protocol: a report owner, a report claim, an acknowledgement from other roots, or a lock held across a brief launch. A shadow run after the end costs money but changes no result, and the operator accepted that.
