@@ -50,8 +50,7 @@ personal-plugins/
         ├── SKILL.md
         ├── PINNED
         ├── references/
-        │   ├── theme-toggle.md
-        │   └── verifier-shadow-study.md
+        │   └── theme-toggle.md
         └── scripts/
             ├── check-drift.sh
             ├── check-drift.test.sh
