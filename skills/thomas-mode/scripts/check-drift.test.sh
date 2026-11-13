@@ -54,6 +54,8 @@ while [ \$# -gt 0 ]; do
   case "\$1" in -o) out="\$2"; shift ;; http*) url="\$1" ;; esac
   shift
 done
+# Plugins named in FAKE_PRIVATE act as private repos: anonymous curl gets 404, the fake gh serves them.
+for name in \${FAKE_PRIVATE:-}; do case "\$url" in */test/\$name/*) printf 404; exit 0 ;; esac; done
 case "\$url" in
   https://github.com/*/commit/*)
     rest="\${url#https://github.com/}"; repo="\${rest%%/commit/*}"; sha="\${rest##*/commit/}"
@@ -65,6 +67,23 @@ case "\$url" in
 esac
 EOF
 chmod +x "$TMP/bin/curl"
+cat > "$TMP/bin/gh" <<EOF
+#!/usr/bin/env bash
+[ "\$1" = api ] || exit 2
+[ -z "\${FAKE_GH_FAIL:-}" ] || { echo "gh: Bad credentials (HTTP 401)" >&2; exit 1; }
+path=""; for a in "\$@"; do case "\$a" in repos/*) path="\$a" ;; esac; done
+case "\$path" in
+  repos/*/commits/*)
+    rest="\${path#repos/}"; repo="\${rest%%/commits/*}"; sha="\${rest##*/commits/}"
+    [ -d "$REMOTE/\$repo/\$sha" ] && exit 0 ;;
+  repos/*/contents/*)
+    rest="\${path#repos/}"; repo="\${rest%%/contents/*}"; file="\${rest#*/contents/}"
+    sha="\${file##*\?ref=}"; file="\${file%%\?ref=*}"
+    [ -f "$REMOTE/\$repo/\$sha/\$file" ] && { cat "$REMOTE/\$repo/\$sha/\$file"; exit 0; } ;;
+esac
+echo "gh: Not Found (HTTP 404)" >&2; exit 1
+EOF
+chmod +x "$TMP/bin/gh"
 
 # A watched file that the "changed" cases edit.
 read -r EDIT_PLUGIN EDIT_PATH <<< "$(head -n 1 <<< "$FILES")"
@@ -106,6 +125,10 @@ done
 H="$TMP/changed"; installed_tree "$H/.xum"; upstream_from "$H/.xum"
 echo extra >> "$H/.xum/plugins/$EDIT_PLUGIN/$EDIT_PATH"
 run_case "reports an upstream change" 1 "^CHANGED $EDIT_PLUGIN $EDIT_PATH " HOME="$H"
+
+H="$TMP/private"; installed_tree "$H/.xum"; upstream_from "$H/.xum"
+run_case "reads a private plugin through gh" 0 '^summary: .* drift=0$' HOME="$H" FAKE_PRIVATE="$EDIT_PLUGIN"
+run_case "fails on a gh error other than 404" 2 '^ERR gh api .* failed \(HTTP 401\)$' HOME="$H" FAKE_PRIVATE="$EDIT_PLUGIN" FAKE_GH_FAIL=1
 
 run_case "fails without any Xum home" 2 'ERR no plugins.json' HOME="$TMP/empty"
 run_case "reports a bad argument before a missing home" 2 '^usage: ' HOME="$TMP/empty" --bogus
