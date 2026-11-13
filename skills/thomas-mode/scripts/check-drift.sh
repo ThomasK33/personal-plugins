@@ -49,6 +49,7 @@ WATCH="pstack docs/harness/claude-code.md
 pstack skills/poteto-mode/SKILL.md
 pstack skills/setup-pstack/SKILL.md
 pstack skills/principle-test-behavior-not-implementation/SKILL.md
+fux-plugins skills/test-audit/SKILL.md
 egm docs/harnesses.md
 egm docs/claude.md
 egm docs/codex.md"
@@ -74,6 +75,12 @@ else:
 PY
 }
 pinned() { awk -v p="$1" '$1==p {print $2}' "$PINS"; }
+# gh_code <api path> <out file>: writes the raw body through gh and prints 200, or 404 when GitHub has no such object.
+gh_code() {
+  local err rc=0
+  err="$(gh api -H 'Accept: application/vnd.github.raw' "$1" 2>&1 >"$2")" || rc=$?
+  if [ "$rc" = 0 ]; then printf 200; elif grep -q 'HTTP 404' <<< "$err"; then printf 404; else echo "ERR gh api $1 failed" >&2; exit 2; fi
+}
 
 missing=0
 while read -r plugin path; do
@@ -106,11 +113,18 @@ while read -r plugin path; do
   if ! grep -qx "$plugin" "$cache/commits-ok" 2>/dev/null; then
     # Read the HTTP code, as for the raw file below: only a 404 means the pinned commit is missing.
     ccode="$(curl -sSL "${CURL_RETRY[@]}" -o /dev/null -w '%{http_code}' "https://github.com/$repo/commit/$pin")" || { echo "ERR cannot fetch github.com commit $pin of $repo" >&2; exit 2; }
+    # A private repo answers 404 to anonymous curl. Read it through the GitHub CLI's login instead.
+    if [ "$ccode" = 404 ] && command -v gh >/dev/null; then ccode="$(gh_code "repos/$repo/commits/$pin" /dev/null)"; [ "$ccode" = 404 ] || echo "$plugin" >> "$cache/via-gh"; fi
     if [ "$ccode" = 404 ]; then echo "ERR pinned commit $pin not found in $repo" >&2; exit 2; fi
     [ "$ccode" = 200 ] || { echo "ERR HTTP $ccode for github.com commit $pin of $repo" >&2; exit 2; }
     echo "$plugin" >> "$cache/commits-ok"
   fi
-  code="$(curl -sSL "${CURL_RETRY[@]}" -o "$base" -w '%{http_code}' "$url")" || { echo "ERR cannot fetch $url" >&2; exit 2; }
+  if grep -qx "$plugin" "$cache/via-gh" 2>/dev/null; then
+    rel="${sub#./}/$path"; rel="${rel#/}"
+    code="$(gh_code "repos/$repo/contents/$rel?ref=$pin" "$base")"
+  else
+    code="$(curl -sSL "${CURL_RETRY[@]}" -o "$base" -w '%{http_code}' "$url")" || { echo "ERR cannot fetch $url" >&2; exit 2; }
+  fi
   if [ "$code" = 404 ]; then echo "ADDED   $plugin $path (not present at ${pin:0:7})"; drift=1; continue; fi
   [ "$code" = 200 ] || { echo "ERR HTTP $code for $url" >&2; exit 2; }
   if ! cmp -s "$base" "$cur"; then
