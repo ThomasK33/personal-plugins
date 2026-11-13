@@ -75,11 +75,16 @@ else:
 PY
 }
 pinned() { awk -v p="$1" '$1==p {print $2}' "$PINS"; }
-# gh_code <api path> <out file>: writes the raw body through gh and prints 200, or 404 when GitHub has no such object.
+# gh_code <api path> <out file>: writes the raw body through gh and prints 200, or 404 when GitHub has no such object
+# (GitHub answers 422 for an unknown commit). It prints only gh's HTTP status on failure, never gh's other output.
 gh_code() {
-  local err rc=0
-  err="$(gh api -H 'Accept: application/vnd.github.raw' "$1" 2>&1 >"$2")" || rc=$?
-  if [ "$rc" = 0 ]; then printf 200; elif grep -q 'HTTP 404' <<< "$err"; then printf 404; else echo "ERR gh api $1 failed" >&2; exit 2; fi
+  local err rc=0 http
+  err="$(timeout 60 gh api -H 'Accept: application/vnd.github.raw' "$1" 2>&1 >"$2")" || rc=$?
+  http="$(grep -oE 'HTTP [0-9]{3}' <<< "$err" | head -n 1 || true)"
+  if [ "$rc" = 0 ]; then printf 200
+  elif [ "$rc" = 124 ]; then echo "ERR gh api $1 timed out" >&2; exit 2
+  elif [ "$http" = "HTTP 404" ] || [ "$http" = "HTTP 422" ]; then printf 404
+  else echo "ERR gh api $1 failed (${http:-no HTTP status})" >&2; exit 2; fi
 }
 
 missing=0
@@ -115,7 +120,10 @@ while read -r plugin path; do
     ccode="$(curl -sSL "${CURL_RETRY[@]}" -o /dev/null -w '%{http_code}' "https://github.com/$repo/commit/$pin")" || { echo "ERR cannot fetch github.com commit $pin of $repo" >&2; exit 2; }
     # A private repo answers 404 to anonymous curl. Read it through the GitHub CLI's login instead.
     if [ "$ccode" = 404 ] && command -v gh >/dev/null; then ccode="$(gh_code "repos/$repo/commits/$pin" /dev/null)"; [ "$ccode" = 404 ] || echo "$plugin" >> "$cache/via-gh"; fi
-    if [ "$ccode" = 404 ]; then echo "ERR pinned commit $pin not found in $repo" >&2; exit 2; fi
+    if [ "$ccode" = 404 ]; then
+      command -v gh >/dev/null || { echo "ERR pinned commit $pin not found in $repo, and no gh on PATH to read a private repo" >&2; exit 2; }
+      echo "ERR pinned commit $pin not found in $repo" >&2; exit 2
+    fi
     [ "$ccode" = 200 ] || { echo "ERR HTTP $ccode for github.com commit $pin of $repo" >&2; exit 2; }
     echo "$plugin" >> "$cache/commits-ok"
   fi

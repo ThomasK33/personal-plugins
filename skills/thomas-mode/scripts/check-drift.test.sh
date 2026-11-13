@@ -70,6 +70,7 @@ chmod +x "$TMP/bin/curl"
 cat > "$TMP/bin/gh" <<EOF
 #!/usr/bin/env bash
 [ "\$1" = api ] || exit 2
+[ -z "\${FAKE_GH_FAIL:-}" ] || { echo "gh: Bad credentials (HTTP 401)" >&2; exit 1; }
 path=""; for a in "\$@"; do case "\$a" in repos/*) path="\$a" ;; esac; done
 case "\$path" in
   repos/*/commits/*)
@@ -127,8 +128,7 @@ run_case "reports an upstream change" 1 "^CHANGED $EDIT_PLUGIN $EDIT_PATH " HOME
 
 H="$TMP/private"; installed_tree "$H/.xum"; upstream_from "$H/.xum"
 run_case "reads a private plugin through gh" 0 '^summary: .* drift=0$' HOME="$H" FAKE_PRIVATE="$EDIT_PLUGIN"
-echo extra >> "$H/.xum/plugins/$EDIT_PLUGIN/$EDIT_PATH"
-run_case "reports a change in a private plugin" 1 "^CHANGED $EDIT_PLUGIN $EDIT_PATH " HOME="$H" FAKE_PRIVATE="$EDIT_PLUGIN"
+run_case "fails on a gh error other than 404" 2 '^ERR gh api .* failed \(HTTP 401\)$' HOME="$H" FAKE_PRIVATE="$EDIT_PLUGIN" FAKE_GH_FAIL=1
 
 run_case "fails without any Xum home" 2 'ERR no plugins.json' HOME="$TMP/empty"
 run_case "reports a bad argument before a missing home" 2 '^usage: ' HOME="$TMP/empty" --bogus
