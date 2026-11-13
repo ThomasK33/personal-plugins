@@ -49,6 +49,7 @@ WATCH="pstack docs/harness/claude-code.md
 pstack skills/poteto-mode/SKILL.md
 pstack skills/setup-pstack/SKILL.md
 pstack skills/principle-test-behavior-not-implementation/SKILL.md
+pstack skills/tdd/SKILL.md
 fux-plugins skills/test-audit/SKILL.md
 egm docs/harnesses.md
 egm docs/claude.md
