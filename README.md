@@ -48,16 +48,13 @@ personal-plugins/
     │   └── SKILL.md
     └── thomas-mode/
         ├── SKILL.md
-        ├── PINNED
         ├── references/
         │   └── theme-toggle.md
         └── scripts/
-            ├── check-drift.sh
-            ├── check-drift.test.sh
             └── test-theme-toggle.sh
 ```
 
-The repository distributes one plugin, named `personal-plugins` in its manifest. `thomas-mode` needs the pstack plugin and the `pstack-in-xum` skill from `coder/fux-plugins`, and works best with egm and the `egm-in-xum` skill from the same plugin. Its `scripts/check-drift.sh` compares the installed pstack and egm files with the commits in `PINNED` and reports the playbook steps whose upstream text changed. Its `scripts/test-theme-toggle.sh` tests the theme toggle snippet in `references/theme-toggle.md` in a browser. It needs `agent-browser` and the coder-brand skill, so CI does not run it. Skills live directly under the standard's fixed `skills/` discovery location. The skill's optional `agents/openai.yaml` carries UI metadata for clients that understand it.
+The repository distributes one plugin, named `personal-plugins` in its manifest. `thomas-mode` needs the pstack plugin and the `pstack-in-xum` skill from `coder/fux-plugins`, and works best with egm and the `egm-in-xum` skill from the same plugin. Its `scripts/test-theme-toggle.sh` tests the theme toggle snippet in `references/theme-toggle.md` in a browser. It needs `agent-browser` and the coder-brand skill, so CI does not run it. Skills live directly under the standard's fixed `skills/` discovery location. The skill's optional `agents/openai.yaml` carries UI metadata for clients that understand it.
 
 ## Validate changes
 
@@ -71,12 +68,6 @@ python3 -m venv .venv
 
 Validation requires a manifest at the repository root, validates it against the official versioned JSON Schema, checks skill frontmatter, argument placeholders (`$ARGUMENTS` and `$1` to `$9`) in `SKILL.md` bodies, and package containment, and verifies local Markdown references. It reads the committed schema copy at `scripts/plugin.schema.json`, so it needs no network, and verifies a pinned SHA-256 digest. To use another copy, pass `--schema /path/to/plugin.schema.json`.
 
-The drift check has its own test, which needs no network:
-
-```sh
-bash skills/thomas-mode/scripts/check-drift.test.sh
-```
-
-These are packaging checks. They do not establish that the instructions improve agent behavior or that every client has been tested. GitHub Actions runs the validator and the drift check test on pushes and pull requests.
+These are packaging checks. They do not establish that the instructions improve agent behavior or that every client has been tested. GitHub Actions runs the validator on pushes and pull requests.
 
 To add another skill to this plugin, create `skills/<skill-name>/SKILL.md` and add it to the table above. Keep the single `plugin.json` at the repository root. Client-specific extensions must follow the standard's extension conventions.
