@@ -52,7 +52,7 @@ His ship prompt is the definition of done:
 
 ## Amendments to plugin steps
 
-Each rule names the plugin step it changes as `[<plugin> <path> § <step title>]`. A rule is stale when its step no longer exists or the plugin now says the same thing. Then follow the plugin, tell the user, and delete the rule in a skill edit.
+Each rule names the plugin step it changes as `[<plugin> <path> § <step title>]`. A rule is stale when its step no longer exists or the plugin now says the same thing. Then follow the plugin and tell the user. Only a skill edit deletes the rule.
 
 ### Feature
 
@@ -211,4 +211,4 @@ Each rule names the plugin step it changes as `[<plugin> <path> § <step title>]
 
 ## Changing this skill
 
-`/reflect` and `/correct` lessons about pstack or egm go here, never into the installed plugins (`~/.xum/plugins/`, or `~/.mux/plugins/` on older installs). A general rule goes in a theme section. A rule that changes one plugin step goes under Amendments, with its anchor and the incident that taught it in one line. Edit in a clone of `ThomasK33/personal-plugins`, run the repo validator, and open a PR.
+`/reflect` and `/correct` lessons about pstack or egm go here, never into the installed plugins (`~/.xum/plugins/`, or `~/.mux/plugins/` on older installs). A general rule goes in a theme section. A rule that changes one plugin step goes under Amendments, with its anchor and the incident that taught it in one line. When a script starts to enforce a rule, replace the prose with "run <script>". Edit in a clone of `ThomasK33/personal-plugins`, run the repo validator, and open a PR.
