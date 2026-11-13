@@ -48,6 +48,7 @@ ANCHORS="$(grep -oP '\[[a-z0-9-]+ [^ \]]+ § [^\]]+\]' "$HERE/SKILL.md" | sort -
 WATCH="pstack docs/harness/claude-code.md
 pstack skills/poteto-mode/SKILL.md
 pstack skills/setup-pstack/SKILL.md
+pstack skills/principle-test-behavior-not-implementation/SKILL.md
 egm docs/harnesses.md
 egm docs/claude.md
 egm docs/codex.md"
