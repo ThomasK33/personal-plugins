@@ -98,7 +98,7 @@ Each rule names the plugin step it changes as `[<plugin> <path> § <step title>]
 
 [pstack skills/reflect/SKILL.md § 5. Apply]
 
-- Route every Accepted edit that targets a pstack or egm file into this skill. A general rule goes in a theme section. A change to one plugin step goes under Amendments with its anchor only when it states one of his own policies. A lesson that only patches how a plugin step runs is not kept here. Never copy a plugin skill into `~/.xum/skills/` or `.xum/skills/`: the copy hides the plugin skill and stops getting upstream updates.
+- Route every Accepted edit that targets a pstack or egm file into this skill. A general rule goes in a theme section. A change to one plugin step goes under Amendments with its anchor only when it states one of his own policies. A row that only patches how a plugin step runs is not Accepted: list it under Backlog. Never copy a plugin skill into `~/.xum/skills/` or `.xum/skills/`: the copy hides the plugin skill and stops getting upstream updates.
 - Route the other edits by who owns the file. A fux-plugins skill gets a PR to `coder/fux-plugins`. A skill that the skills CLI installed (`~/.agents/skills`, such as gh-stack) gets a global memory rule, because an upstream change is an external fix that needs his approval. A repo skill or a Xum built-in skill gets a PR in that repo. A personal workflow gets a skill in personal-plugins.
 - Show each row's destination in the approval list. After approval, ship a thomas-mode edit per "Changing this skill", and ship every other row at its own destination. This replaces reflect's "Never open a PR or push" for every route above.
 - List Backlog items in the reply. File an issue only when he says so.
