@@ -6,17 +6,8 @@ An [Agent Plugins 1.0.0](https://agent-plugins.org/specification) package for co
 
 | Skill | When to use it |
 | --- | --- |
-| [deliver-reviewable-changes](skills/deliver-reviewable-changes/SKILL.md) | When planning or implementing code changes, including executing an existing plan, to choose reviewable increments before coding. |
 | [refactor-split-stack](skills/refactor-split-stack/SKILL.md) | When planning or running a behaviour-preserving refactor that splits long methods or a large file across several stacks of PRs, written by sub-agent workers. |
-| [thomas-mode](skills/thomas-mode/SKILL.md) | When invoked as `/thomas-mode`. Its amendments to pstack and egm steps also apply to pstack or egm runs started without it, such as `Using skill poteto-mode` and `/reflect`. Runs the pstack plugin's `poteto-mode` in the Xum agent harness through the `pstack-in-xum` adapter, with Thomas's few Xum-only limits and one amendment to pstack's `/reflect` apply step. |
-
-The short core skill defines five delivery rules: split before coding, freeze each established layer's scope, stabilize PRs from the bottom up, parallelize against stable prerequisites, and merge a ready phase through its configured gates. The scope freeze starts when a delivery increment is committed or its stacked PR is created, including drafts. Review fixes, CI fixes, and necessary integration updates stay with the owning layer; new scope belongs elsewhere.
-
-Detailed delivery guidance, review prompts, PR-writing examples, and repository onboarding live in references loaded only when needed. The core remains usable on its own and can use an installed stack-tool skill for mechanics. Later phases do not hold up a finished phase just because they share a stack.
-
-Use it while creating a plan and when starting implementation of that plan, even if the request only says "implement the plan." The executing agent checks delivery boundaries before editing; an approved milestone does not automatically become one PR. Small, cohesive changes keep a lightweight workflow.
-
-On first use in a repository, it reads existing rules, asks only about missing review gates and merge authority, and saves confirmed choices in repository-scoped agent memory. Later tasks reuse that policy. A repository can choose "Codex code review reports no issues, required checks pass, then the agent merges automatically" without an extra human-approval step. Repositories that require human approval retain it. Memory storage depends on the agent's available capabilities; the skill does not change repository controls.
+| [thomas-mode](skills/thomas-mode/SKILL.md) | When invoked as `/thomas-mode`. Runs the pstack plugin's `poteto-mode` in the Xum agent harness through the `pstack-in-xum` adapter, with Thomas's few Xum-only limits. |
 
 ## Use the plugin
 
@@ -26,35 +17,19 @@ git clone https://github.com/thomask33/personal-plugins.git
 
 Install from `https://github.com/thomask33/personal-plugins` in a client that supports Agent Plugins skills. For local installation, use the cloned `personal-plugins` directory itself as the plugin root. No repository subpath is needed. Installation and activation are client-specific; follow your client's [setup instructions](https://agent-plugins.org/compatible-clients).
 
-Once the skill is available, give the agent this instruction at task start:
-
-> Use the deliver-reviewable-changes skill before planning or implementing this change. Choose the next independently shippable increment, identify its required validation, and carry that scope through the PR handoff.
-
-If your client supports Agent Skills but cannot yet load this plugin format, import the complete `skills/deliver-reviewable-changes` directory through its skill installation mechanism. Keep the `references/` directory with `SKILL.md`.
-
-The description is written for early discovery. Explicitly invoking the skill makes the intended use clear; installation alone does not guarantee that an agent will select it for every task. The plugin needs no MCP server, credentials, or executable hooks.
-
 ## Package layout
 
 ```text
 personal-plugins/
 ├── plugin.json
 └── skills/
-    ├── deliver-reviewable-changes/
-    │   ├── SKILL.md
-    │   ├── agents/openai.yaml
-    │   └── references/
     ├── refactor-split-stack/
     │   └── SKILL.md
     └── thomas-mode/
-        ├── SKILL.md
-        ├── references/
-        │   └── theme-toggle.md
-        └── scripts/
-            └── test-theme-toggle.sh
+        └── SKILL.md
 ```
 
-The repository distributes one plugin, named `personal-plugins` in its manifest. `thomas-mode` needs the pstack plugin and the `pstack-in-xum` skill from `coder/fux-plugins`, and works best with egm and the `egm-in-xum` skill from the same plugin. Its `scripts/test-theme-toggle.sh` tests the theme toggle snippet in `references/theme-toggle.md` in a browser. It needs `agent-browser` and the coder-brand skill, so CI does not run it. Skills live directly under the standard's fixed `skills/` discovery location. The skill's optional `agents/openai.yaml` carries UI metadata for clients that understand it.
+The repository distributes one plugin, named `personal-plugins` in its manifest. `thomas-mode` needs the pstack plugin and the `pstack-in-xum` skill from `coder/fux-plugins`, and works best with egm and the `egm-in-xum` skill from the same plugin. Skills live directly under the standard's fixed `skills/` discovery location.
 
 ## Validate changes
 
