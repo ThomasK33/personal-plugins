@@ -2,8 +2,10 @@
 # Tests the snippet in references/theme-toggle.md in a real browser: it builds pages from the
 # file's html, css and js blocks (product and brand look; plain, with a fake window.xum, and with
 # storage that throws),
-# then checks each choice under each host and OS (background, text color, assets, selection),
-# themechange events, arrow keys, buttons, and saved state in localStorage and a fake window.xum.
+# then checks each choice under each host and OS (background, text color, assets, selection, the
+# color-scheme of <html>),
+# themechange events, arrow keys (with and without Alt, Control, Meta or Shift), buttons, and saved
+# state in localStorage and a fake window.xum.
 # Needs agent-browser and the coder-brand skill (CODER_BRAND_DIR). Prints one line per check
 # and a final COUNT line; exits 1 on any failure.
 set -uo pipefail
@@ -75,6 +77,7 @@ for look in product brand; do
   for os in light dark; do
     ab set media $os >/dev/null; sleep 0.3
     chk "$look no-host os=$os choice=auto" "$os,$os,$os,$os,auto" "$(ev "$STATE")"
+    chk "$look no-host os=$os choice=auto: <html> color-scheme follows" "$os" "$(ev 'getComputedStyle(document.documentElement).colorScheme')"
   done
   ev "window.__events.length=0" >/dev/null; ab set media light >/dev/null; sleep 0.3
   ab set media dark >/dev/null; sleep 0.3
@@ -113,8 +116,12 @@ ab focus '[data-theme-set=light]' >/dev/null; ab press ArrowRight >/dev/null; sl
 chk "$look arrow key selects dark" "dark" "$(ev 'document.body.dataset.theme||"auto"')"
 ab focus '[data-theme-set=dark]' >/dev/null; ab press ArrowLeft >/dev/null; ab press ArrowLeft >/dev/null; sleep 0.2; ab reload >/dev/null
 chk "$look arrow choice auto kept after reload" "auto,auto" "$(ev "[document.body.dataset.theme||'auto', $SEL].join(',')")"
-ab focus '[data-theme-set=auto]' >/dev/null; ab press Alt+ArrowRight >/dev/null; ab press Shift+ArrowRight >/dev/null; sleep 0.2
-chk "$look arrows with a modifier leave the choice alone" "auto,auto" "$(ev "[document.body.dataset.theme||'auto', $SEL].join(',')")"
+# One modifier at a time, so two wrong moves cannot cancel out.
+for mod in Alt Control Meta Shift; do
+  ev "document.querySelector('[data-theme-set=auto]').click()" >/dev/null
+  ab focus '[data-theme-set=auto]' >/dev/null; ab press $mod+ArrowRight >/dev/null; sleep 0.2
+  chk "$look $mod+ArrowRight leaves the choice alone" "auto,auto" "$(ev "[document.body.dataset.theme||'auto', $SEL].join(',')")"
+done
 ab focus '[data-theme-set=auto]' >/dev/null; ab press ArrowLeft >/dev/null; sleep 0.2
 chk "$look ArrowLeft from auto wraps to dark" "dark,dark" "$(ev "[document.body.dataset.theme||'auto', document.activeElement.dataset.themeSet].join(',')")"
 ab press ArrowRight >/dev/null; sleep 0.2
