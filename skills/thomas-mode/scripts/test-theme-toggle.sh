@@ -62,6 +62,7 @@ for look in product brand; do
       ev "document.querySelector('[data-theme-set=$choice]').click()" >/dev/null
       exp=$([ $choice = auto ] && echo $host || echo $choice)
       chk "$look host=$host os=$(opp $host) choice=$choice" "$exp,$exp,$exp,$exp,$choice" "$(ev "$STATE")"
+      chk "$look host=$host choice=$choice: <html> color-scheme follows" "$exp" "$(ev 'getComputedStyle(document.documentElement).colorScheme')"
     done
   done
   chk "$look roving tabindex" "-1,-1,0" "$(ev '[...document.querySelectorAll("[data-theme-set]")].map(b=>b.tabIndex).join(",")')"
@@ -112,6 +113,8 @@ ab focus '[data-theme-set=light]' >/dev/null; ab press ArrowRight >/dev/null; sl
 chk "$look arrow key selects dark" "dark" "$(ev 'document.body.dataset.theme||"auto"')"
 ab focus '[data-theme-set=dark]' >/dev/null; ab press ArrowLeft >/dev/null; ab press ArrowLeft >/dev/null; sleep 0.2; ab reload >/dev/null
 chk "$look arrow choice auto kept after reload" "auto,auto" "$(ev "[document.body.dataset.theme||'auto', $SEL].join(',')")"
+ab focus '[data-theme-set=auto]' >/dev/null; ab press Alt+ArrowRight >/dev/null; ab press Shift+ArrowRight >/dev/null; sleep 0.2
+chk "$look arrows with a modifier leave the choice alone" "auto,auto" "$(ev "[document.body.dataset.theme||'auto', $SEL].join(',')")"
 ab focus '[data-theme-set=auto]' >/dev/null; ab press ArrowLeft >/dev/null; sleep 0.2
 chk "$look ArrowLeft from auto wraps to dark" "dark,dark" "$(ev "[document.body.dataset.theme||'auto', document.activeElement.dataset.themeSet].join(',')")"
 ab press ArrowRight >/dev/null; sleep 0.2

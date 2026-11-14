@@ -1,6 +1,6 @@
 # Theme toggle
 
-The "Theme toggle" rule in `SKILL.md` points here. Copy the three blocks below into the page. `scripts/test-theme-toggle.sh` tests them together: run it after any change to them.
+The "Theme toggle" rule in `SKILL.md` points here. Copy the three blocks below into the page. On a page built with the `coder-brand` kit, link its `kit/theme-toggle.js` instead of copying the script: it is this script, and the kit's `pack.mjs` inlines it (`references/components.md`, "Theme toggle"). `scripts/test-theme-toggle.sh` tests them together: run it after any change to them.
 
 ## Markup
 
@@ -32,7 +32,7 @@ body[data-theme="light"] .only-dark, body[data-theme="dark"] .only-light,
 
 ## Script
 
-Put it at the end of `<body>`, before any script that calls `artifactTheme()`. It handles clicks and the Left and Right arrow keys itself, in both looks, the same way `coder-kit.js` does. In Xum, whose frame has no storage, it saves the choice in `window.xum.state`, which a republish to the same path keeps. Elsewhere it uses `localStorage`.
+Put it at the end of `<body>`, before any script that calls `artifactTheme()`. It handles clicks and the Left and Right arrow keys itself, in both looks, the same way `coder-kit.js` does. It leaves arrows with Alt, Ctrl, Meta or Shift to the browser, so Alt+Left still goes back. For Light and Dark it also sets `color-scheme` on `<html>`, so the scrollbars follow the choice. In Xum, whose frame has no storage, it saves the choice in `window.xum.state`, which a republish to the same path keeps. Elsewhere it uses `localStorage`.
 
 ```js
 (() => {
@@ -56,6 +56,7 @@ Put it at the end of `<body>`, before any script that calls `artifactTheme()`. I
     if (v === choice) return;
     choice = v;
     if (v === "auto") delete body.dataset.theme; else body.dataset.theme = v;
+    root.style.colorScheme = v === "auto" ? "" : v;
     for (const s of segs) { s.setAttribute("aria-selected", String(s.dataset.themeSet === v)); s.tabIndex = s.dataset.themeSet === v ? 0 : -1; }
     if (persist) save(v);
     announce();
@@ -64,7 +65,7 @@ Put it at the end of `<body>`, before any script that calls `artifactTheme()`. I
   for (const s of segs) s.addEventListener("click", () => apply(s.dataset.themeSet, true));
   if (toggle) toggle.addEventListener("keydown", (e) => {
     const at = segs.indexOf(e.target);
-    if (at < 0 || (e.key !== "ArrowLeft" && e.key !== "ArrowRight")) return;
+    if (at < 0 || (e.key !== "ArrowLeft" && e.key !== "ArrowRight") || e.altKey || e.ctrlKey || e.metaKey || e.shiftKey) return;
     const next = segs[(at + (e.key === "ArrowRight" ? 1 : segs.length - 1)) % segs.length];
     apply(next.dataset.themeSet, true);
     next.focus();
@@ -85,4 +86,4 @@ Put it at the end of `<body>`, before any script that calls `artifactTheme()`. I
 
 Before you publish, check the three choices under a light and a dark host: six states. To set the host, set `data-xum-theme` on `<html>`. The script follows that attribute, so no event is needed. For each Auto state, also set the OS theme to the opposite of the host (`agent-browser set media`), so that a page that follows the OS instead of the host fails. Also remove the attribute and check Auto under a light and a dark OS. Then move the choice with an arrow key, and reload to see it restored. In Xum, the other keys in `window.xum.state` must survive. `scripts/test-theme-toggle.sh` runs all of these on the snippet alone.
 
-Two things stay with the host: the scrollbars, which follow the `color-scheme` of `<html>`, and the color that Xum paints around the frame. Both can show the host's theme after a Light or Dark choice.
+The color that Xum paints around the frame stays with the host, so it can show the host's theme after a Light or Dark choice.
