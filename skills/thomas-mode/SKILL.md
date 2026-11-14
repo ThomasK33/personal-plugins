@@ -12,7 +12,7 @@ When you load this skill only for its Amendments (a pstack or egm step that runs
 1. Load the `pstack-in-xum` skill from the `fux-plugins` plugin. It maps pstack's Cursor names to Xum. Before you follow an egm skill, also load `egm-in-xum` from `fux-plugins`.
 2. Load `pstack:poteto-mode` with `agent_skill_read` and follow it.
 
-Precedence: `~/.xum/AGENTS.md`, then his memory, then this skill, then poteto-mode and its playbooks.
+Precedence: `~/.xum/AGENTS.md`, then his memory (`/memories/global/user-workflow-preferences.md`, read it with the `memory` tool at task start and after every context rollover), then this skill, then poteto-mode and its playbooks.
 
 ## His limits
 
