@@ -1,8 +1,8 @@
 {
   "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
   "name": "personal-plugins",
-  "version": "0.5.0",
-  "description": "Thomas Kosiewski's agent skills: deliver-reviewable-changes for small, reviewable increments, refactor-split-stack for behaviour-preserving refactors delivered as stacked PRs, and thomas-mode to run pstack in Xum with his few Xum-only limits.",
+  "version": "0.6.0",
+  "description": "Thomas Kosiewski's agent skills: refactor-split-stack for behaviour-preserving refactors delivered as stacked PRs, and thomas-mode to run pstack in Xum with his few Xum-only limits.",
   "author": {
     "name": "Thomas Kosiewski",
     "url": "https://github.com/thomask33"
@@ -13,7 +13,6 @@
     "code-review",
     "pull-requests",
     "planning",
-    "agent-skills",
-    "review-policy"
+    "agent-skills"
   ]
 }
